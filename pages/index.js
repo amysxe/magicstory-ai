@@ -22,7 +22,8 @@ export default function Home() {
 
   const stopAudio = () => {
     if (audioUtterance) {
-      window.speechSynthesis.cancel();
+      if (audioUtterance.pause) audioUtterance.pause(); // TTS Audio
+      window.speechSynthesis.cancel(); // fallback
       setAudioUtterance(null);
     }
   };
