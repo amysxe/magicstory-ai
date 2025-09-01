@@ -8,6 +8,7 @@ export default function Home() {
   const [moral, setMoral] = useState("Kindness");
   const [storyData, setStoryData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
   const storyRef = useRef(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
@@ -31,6 +32,28 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const playStory = () => {
+    if (!storyData) return;
+    if (!("speechSynthesis" in window)) {
+      alert("Sorry, your browser does not support Text-to-Speech.");
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(storyData.content);
+    utterance.lang =
+      language === "Bahasa"
+        ? "id-ID"
+        : language === "German"
+        ? "de-DE"
+        : "en-US";
+
+    utterance.onstart = () => setSpeaking(true);
+    utterance.onend = () => setSpeaking(false);
+
+    window.speechSynthesis.cancel(); // stop any ongoing speech
+    window.speechSynthesis.speak(utterance);
   };
 
   useEffect(() => {
@@ -142,6 +165,14 @@ export default function Home() {
 
           <button onClick={generateStory} className="button">
             Find More Story
+          </button>
+
+          <button
+            onClick={playStory}
+            className="button"
+            style={{ marginTop: "10px" }}
+          >
+            {speaking ? "Speaking..." : "🔊 Play Story"}
           </button>
         </div>
       )}
@@ -275,7 +306,7 @@ export default function Home() {
           border-radius: 50%;
           cursor: pointer;
           font-size: 18px;
-          box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
           transition: background 0.3s;
         }
         .scroll-top:hover {
