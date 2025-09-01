@@ -34,14 +34,12 @@ export default function Home() {
     }
   };
 
-  // Auto scroll to story
   useEffect(() => {
     if (storyData && storyRef.current) {
       storyRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [storyData]);
 
-  // Show scroll to top button
   useEffect(() => {
     const handleScroll = () => setShowScrollTop(window.scrollY > 300);
     window.addEventListener("scroll", handleScroll);
@@ -55,54 +53,66 @@ export default function Home() {
       <h1 className="title">Magic Story with AI</h1>
       <p className="subtitle">Generate fun and meaningful stories for kids!</p>
 
-      <div className="form">
-        <label>Category</label>
-        <select
-          className="input"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-        >
-          <option>Fruit</option>
-          <option>Animal</option>
-          <option>Person</option>
-          <option>Mix</option>
-          <option>Random</option>
-        </select>
+      <div className="form-box">
+        <div className="form-row">
+          <div className="field">
+            <label>Category</label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="input"
+            >
+              <option>Fruit</option>
+              <option>Animal</option>
+              <option>Person</option>
+              <option>Mix</option>
+              <option>Random</option>
+            </select>
+          </div>
 
-        <label>Story Length</label>
-        <select
-          className="input"
-          value={length}
-          onChange={(e) => setLength(e.target.value)}
-        >
-          <option>5-10 min</option>
-          <option>10-15 min</option>
-          <option>&gt;15 min</option>
-        </select>
+          <div className="field">
+            <label>Story Length</label>
+            <select
+              value={length}
+              onChange={(e) => setLength(e.target.value)}
+              className="input"
+            >
+              <option>5-10 min</option>
+              <option>10-15 min</option>
+              <option>&gt;15 min</option>
+            </select>
+          </div>
+        </div>
 
-        <label>Language</label>
-        <select
-          className="input"
-          value={language}
-          onChange={(e) => setLanguage(e.target.value)}
-        >
-          <option>English</option>
-          <option>Bahasa</option>
-          <option>German</option>
-        </select>
+        <div className="form-row">
+          <div className="field">
+            <label>Language</label>
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              className="input"
+            >
+              <option>English</option>
+              <option>Bahasa</option>
+              <option>German</option>
+            </select>
+          </div>
 
-        <label>Moral Lesson</label>
-        <select
-          className="input"
-          value={moral}
-          onChange={(e) => setMoral(e.target.value)}
-        >
-          <option>Kindness</option>
-          <option>Honesty</option>
-          <option>Adventure</option>
-          <option>Bravery</option>
-          <option>Friendship</option>
-        </select>
+          <div className="field">
+            <label>Moral Lesson</label>
+            <select
+              value={moral}
+              onChange={(e) => setMoral(e.target.value)}
+              className="input"
+            >
+              <option>Kindness</option>
+              <option>Honesty</option>
+              <option>Adventure</option>
+              <option>Bravery</option>
+              <option>Friendship</option>
+            </select>
+          </div>
+        </div>
 
         <button
           onClick={generateStory}
@@ -156,7 +166,7 @@ export default function Home() {
           max-width: 900px;
           margin: 0 auto;
           padding: 40px 20px 100px;
-          font-family: "Georgia", serif;
+          font-family: "Helvetica Neue", sans-serif;
           background: #faf6f1;
           min-height: 100vh;
           display: flex;
@@ -174,11 +184,25 @@ export default function Home() {
           color: #6d4c41;
           font-size: 18px;
         }
-        .form {
+        .form-box {
+          background: white;
+          padding: 30px;
+          border-radius: 12px;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
           display: flex;
           flex-direction: column;
-          gap: 16px;
+          gap: 20px;
           margin-bottom: 40px;
+        }
+        .form-row {
+          display: flex;
+          gap: 20px;
+          flex-wrap: wrap;
+        }
+        .field {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
         }
         .input {
           padding: 14px;
@@ -263,6 +287,9 @@ export default function Home() {
           background: #f4511e;
         }
         @media (max-width: 600px) {
+          .form-row {
+            flex-direction: column;
+          }
           .story-image {
             width: 100%;
             height: auto;
