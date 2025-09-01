@@ -1,192 +1,119 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
+import Story from "../components/Story";
 
-export default function Story({ data, language, onGenerateMore }) {
-  const [speaking, setSpeaking] = useState(false);
-  const [paused, setPaused] = useState(false);
-  const storyRef = useRef(null);
-  const utteranceRef = useRef(null);
+export default function Home() {
+  const [category, setCategory] = useState("Fruit");
+  const [length, setLength] = useState("5-10 min");
+  const [language, setLanguage] = useState("English");
+  const [moral, setMoral] = useState("Friendship");
+  const [storyData, setStoryData] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (storyRef.current) {
-      storyRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [data]);
+  const generateStory = async () => {
+    try {
+      // Stop any ongoing audio
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
 
-  const playStory = () => {
-    if (!data) return;
-    if (!("speechSynthesis" in window)) {
-      alert("Sorry, your browser does not support Text-to-Speech.");
-      return;
-    }
+      setLoading(true);
+      setStoryData(null);
 
-    // Cancel any ongoing speech
-    window.speechSynthesis.cancel();
-    setPaused(false);
-
-    const utterance = new SpeechSynthesisUtterance(data.content);
-    utterance.lang =
-      language === "Bahasa"
-        ? "id-ID"
-        : language === "German"
-        ? "de-DE"
-        : "en-US";
-
-    utterance.onstart = () => setSpeaking(true);
-    utterance.onend = () => {
-      setSpeaking(false);
-      setPaused(false);
-    };
-
-    utteranceRef.current = utterance;
-    window.speechSynthesis.speak(utterance);
-  };
-
-  const pauseStory = () => {
-    if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
-      window.speechSynthesis.pause();
-      setPaused(true);
+      const res = await fetch("/api/story", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ category, length, language, moral }),
+      });
+      const data = await res.json();
+      setStoryData(data);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to generate story. Try again.");
+    } finally {
+      setLoading(false);
     }
   };
-
-  const resumeStory = () => {
-    if (window.speechSynthesis.paused) {
-      window.speechSynthesis.resume();
-      setPaused(false);
-    }
-  };
-
-  const stopStory = () => {
-    window.speechSynthesis.cancel();
-    setSpeaking(false);
-    setPaused(false);
-  };
-
-  if (!data) return null;
 
   return (
-    <div className="story-result" ref={storyRef}>
-      <h2 className="story-title">{data.title}</h2>
+    <div className="container">
+      <h1>Magic Story with AI</h1>
+      <p>Generate fun and meaningful stories for kids!</p>
 
-      <div className="audio-controls">
-        {!speaking && (
-          <button onClick={playStory} className="button audio-button">
-            🔊 Play with audio
-          </button>
-        )}
-        {speaking && !paused && (
-          <button onClick={pauseStory} className="button audio-button">
-            ⏸ Pause
-          </button>
-        )}
-        {paused && (
-          <button onClick={resumeStory} className="button audio-button">
-            ▶ Resume
-          </button>
-        )}
-        {speaking && (
-          <button onClick={stopStory} className="button audio-button">
-            ⏹ Stop
-          </button>
-        )}
-      </div>
+      <div className="form-box">
+        <select value={category} onChange={(e) => setCategory(e.target.value)}>
+          <option>Fruit</option>
+          <option>Animal</option>
+          <option>Person</option>
+          <option>Mix</option>
+          <option>Random</option>
+        </select>
 
-      <div className="story-content">
-        {data.content.split(/\n+/).map((para, idx) => (
-          <p key={idx} className="story-paragraph">
-            {para}
-          </p>
-        ))}
-      </div>
+        <select value={length} onChange={(e) => setLength(e.target.value)}>
+          <option>5-10 min</option>
+          <option>10-15 min</option>
+          <option>&gt;15 min</option>
+        </select>
 
-      <div className="story-images">
-        {data.images.map((url, idx) => (
-          <img
-            key={idx}
-            src={url}
-            alt={`Story illustration ${idx + 1}`}
-            className="story-image"
-          />
-        ))}
-      </div>
+        <select value={language} onChange={(e) => setLanguage(e.target.value)}>
+          <option>English</option>
+          <option>Bahasa</option>
+          <option>German</option>
+        </select>
 
-      <div className="story-buttons">
-        <button onClick={onGenerateMore} className="button">
-          Find More Story
+        <select value={moral} onChange={(e) => setMoral(e.target.value)}>
+          <option>Friendship</option>
+          <option>Honesty</option>
+          <option>Kindness</option>
+          <option>Sharing</option>
+        </select>
+
+        <button onClick={generateStory} disabled={loading}>
+          {loading ? "Generating..." : "Generate Story"}
         </button>
       </div>
 
+      {storyData && (
+        <Story
+          key={storyData.title} // force re-mount to reset audio buttons
+          data={storyData}
+          language={language}
+          onGenerateMore={generateStory}
+        />
+      )}
+
       <style jsx>{`
-        .story-result {
-          background: white;
-          padding: 30px;
-          border-radius: 12px;
-          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-          margin-bottom: 40px;
-        }
-        .story-title {
-          font-size: 28px;
-          margin-bottom: 12px;
+        .container {
+          max-width: 900px;
+          margin: auto;
+          padding: 20px;
+          font-family: "Helvetica Neue", sans-serif;
           text-align: center;
-          color: #4b2e2e;
         }
-        .audio-controls {
-          display: flex;
-          justify-content: center;
-          gap: 10px;
-          margin-bottom: 20px;
-          flex-wrap: wrap;
-        }
-        .audio-button {
-          padding: 10px 16px;
-          font-size: 14px;
-        }
-        .story-content {
-          font-size: 18px;
-          line-height: 1.8;
-          color: #333;
+        .form-box {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 15px;
+          background: #fdf6e3;
+          padding: 20px;
+          border-radius: 12px;
           margin-bottom: 30px;
         }
-        .story-paragraph {
-          margin-bottom: 16px;
+        select,
+        button {
+          padding: 12px;
+          font-size: 16px;
+          border-radius: 8px;
+          border: 1px solid #ccc;
         }
-        .story-images {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 20px;
-          margin-bottom: 30px;
-          justify-content: center;
-        }
-        .story-image {
-          width: 240px;
-          height: 240px;
-          object-fit: cover;
-          border-radius: 16px;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .story-buttons {
-          display: flex;
-          gap: 20px;
-          flex-wrap: wrap;
-          justify-content: center;
-        }
-        .button {
-          padding: 14px;
+        button {
           background: #ff7043;
           color: white;
-          font-size: 18px;
-          border: none;
-          border-radius: 8px;
           cursor: pointer;
+          grid-column: span 2;
           transition: background 0.3s;
         }
-        .button:hover {
+        button:hover {
           background: #f4511e;
-        }
-        @media (max-width: 600px) {
-          .story-image {
-            width: 100%;
-            height: auto;
-          }
         }
       `}</style>
     </div>
