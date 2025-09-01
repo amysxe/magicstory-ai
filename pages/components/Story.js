@@ -7,9 +7,7 @@ export default function Story({ data, language, onGenerateMore }) {
   const utteranceRef = useRef(null);
 
   useEffect(() => {
-    if (storyRef.current) {
-      storyRef.current.scrollIntoView({ behavior: "smooth" });
-    }
+    if (storyRef.current) storyRef.current.scrollIntoView({ behavior: "smooth" });
   }, [data]);
 
   const playStory = () => {
