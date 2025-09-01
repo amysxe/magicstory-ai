@@ -1,5 +1,5 @@
 import { useState } from "react";
-import story from "../api/story";
+import Story from "../components/Story";
 
 export default function Home() {
   const [category, setCategory] = useState("Fruit");
@@ -11,9 +11,8 @@ export default function Home() {
 
   const generateStory = async () => {
     try {
-      // Stop any ongoing audio
       if ("speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
+        window.speechSynthesis.cancel(); // stop previous audio
       }
 
       setLoading(true);
@@ -24,6 +23,7 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ category, length, language, moral }),
       });
+
       const data = await res.json();
       setStoryData(data);
     } catch (err) {
@@ -74,7 +74,7 @@ export default function Home() {
 
       {storyData && (
         <Story
-          key={storyData.title} // force re-mount to reset audio buttons
+          key={storyData.title} // force remount to reset audio
           data={storyData}
           language={language}
           onGenerateMore={generateStory}
