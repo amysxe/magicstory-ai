@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Story from "../components/Story";
 
 export default function Home() {
@@ -6,47 +6,42 @@ export default function Home() {
   const [length, setLength] = useState("5-10 min");
   const [language, setLanguage] = useState("English");
   const [moral, setMoral] = useState("Kindness");
-  const [story, setStory] = useState(null);
+  const [storyData, setStoryData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const topRef = useRef(null);
 
   const generateStory = async () => {
     setLoading(true);
-    setStory(null);
-
+    setStoryData(null);
     try {
       const res = await fetch("/api/story", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ category, length, language, moral }),
       });
-
       const data = await res.json();
-
-      if (data.error) {
-        alert(data.error);
-      } else {
-        setStory(data);
-        setTimeout(() => {
-          document.getElementById("story-title")?.scrollIntoView({ behavior: "smooth" });
-        }, 100);
-      }
+      if (data.error) alert(data.error);
+      else setStoryData(data);
+      setTimeout(() => topRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
     } catch (err) {
+      alert("Failed to generate story");
       console.error(err);
-      alert("Failed to generate story.");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
-  return (
-    <div style={{ fontFamily: "Helvetica Neue", maxWidth: "900px", margin: "0 auto", padding: "20px" }}>
-      <h1 style={{ textAlign: "center" }}>Magic Story With AI</h1>
-      <p style={{ textAlign: "center", marginBottom: "30px" }}>Generate fun and meaningful stories for kids!</p>
+  const scrollToTop = () => topRef.current?.scrollIntoView({ behavior: "smooth" });
 
-      <div style={{ background: "#f9f9f9", padding: "20px", borderRadius: "12px", display: "flex", flexWrap: "wrap", gap: "15px" }}>
-        <div style={{ flex: "1 1 45%" }}>
+  return (
+    <div ref={topRef} style={{ fontFamily: "Helvetica Neue", padding: "20px", background: "#f9f5f0", minHeight: "100vh" }}>
+      <h1 style={{ textAlign: "center" }}>Magic Story with AI</h1>
+      <p style={{ textAlign: "center" }}>Generate fun and meaningful stories for kids!</p>
+
+      <div style={{ background: "#fff5eb", padding: "20px", borderRadius: "12px", maxWidth: "900px", margin: "20px auto", display: "flex", gap: "10px", flexWrap: "wrap" }}>
+        <div style={{ flex: 1, minWidth: "150px" }}>
           <label>Category</label>
-          <select value={category} onChange={e => setCategory(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", marginTop: "5px" }}>
+          <select value={category} onChange={e => setCategory(e.target.value)} style={{ width: "100%", padding: "8px", marginTop: "4px", borderRadius: "8px" }}>
             <option>Animal</option>
             <option>Fruit</option>
             <option>Person</option>
@@ -54,47 +49,46 @@ export default function Home() {
             <option>Random</option>
           </select>
         </div>
-
-        <div style={{ flex: "1 1 45%" }}>
+        <div style={{ flex: 1, minWidth: "150px" }}>
           <label>Length</label>
-          <select value={length} onChange={e => setLength(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", marginTop: "5px" }}>
+          <select value={length} onChange={e => setLength(e.target.value)} style={{ width: "100%", padding: "8px", marginTop: "4px", borderRadius: "8px" }}>
             <option>5-10 min</option>
             <option>10-15 min</option>
             <option>&gt;15 min</option>
           </select>
         </div>
-
-        <div style={{ flex: "1 1 45%" }}>
+        <div style={{ flex: 1, minWidth: "150px" }}>
           <label>Language</label>
-          <select value={language} onChange={e => setLanguage(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", marginTop: "5px" }}>
+          <select value={language} onChange={e => setLanguage(e.target.value)} style={{ width: "100%", padding: "8px", marginTop: "4px", borderRadius: "8px" }}>
             <option>English</option>
             <option>Bahasa</option>
             <option>German</option>
           </select>
         </div>
-
-        <div style={{ flex: "1 1 45%" }}>
+        <div style={{ flex: 1, minWidth: "150px" }}>
           <label>Moral</label>
-          <select value={moral} onChange={e => setMoral(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", marginTop: "5px" }}>
+          <select value={moral} onChange={e => setMoral(e.target.value)} style={{ width: "100%", padding: "8px", marginTop: "4px", borderRadius: "8px" }}>
             <option>Kindness</option>
             <option>Honesty</option>
-            <option>Bravery</option>
             <option>Friendship</option>
-            <option>Respect</option>
+            <option>Bravery</option>
           </select>
         </div>
       </div>
 
-      <button
-        onClick={generateStory}
-        style={{ background: "#ff7043", color: "#fff", padding: "14px 0", border: "none", borderRadius: "12px", marginTop: "25px", cursor: "pointer", width: "100%", fontWeight: "bold", fontSize: "16px" }}
-      >
-        {loading ? "Generating..." : "Generate Story"}
+      <div style={{ textAlign: "center", margin: "20px" }}>
+        <button onClick={generateStory} disabled={loading} style={{ background: "#ff7043", color: "#fff", padding: "12px 24px", borderRadius: "12px", fontSize: "16px" }}>
+          {loading ? "Generating..." : "Generate Story"}
+        </button>
+      </div>
+
+      {storyData && <Story data={storyData} />}
+
+      <button onClick={scrollToTop} style={{ position: "fixed", bottom: "20px", right: "20px", background: "#ffdace", color: "#ff7043", padding: "10px 12px", borderRadius: "12px", fontSize: "14px" }}>
+        ↑ Scroll to top
       </button>
 
-      {story && <Story data={story} />}
-
-      <footer style={{ textAlign: "center", marginTop: "60px" }}>
+      <footer style={{ textAlign: "center", marginTop: "40px", marginBottom: "60px" }}>
         Copyright &copy; 2025 by Laniakea Digital
       </footer>
     </div>
