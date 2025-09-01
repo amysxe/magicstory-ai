@@ -1,22 +1,22 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 
 export default function Story({ data }) {
+  const [audio, setAudio] = useState(null);
   const [playing, setPlaying] = useState(false);
-  const [audioObj, setAudioObj] = useState(null);
-  const storyRef = useRef();
 
-  // Stop audio when component unmounts or new story renders
   useEffect(() => {
-    if (audioObj) audioObj.pause();
-    return () => {
-      if (audioObj) audioObj.pause();
-    };
+    // Stop previous audio when new story renders
+    if (audio) {
+      audio.pause();
+      setPlaying(false);
+    }
   }, [data]);
 
-  const handlePlayAudio = async () => {
-    if (typeof window === "undefined") return; // client only
-    if (audioObj) audioObj.pause();
-    setPlaying(true);
+  const playAudio = async () => {
+    if (audio) {
+      audio.pause();
+      setPlaying(false);
+    }
     try {
       const res = await fetch("/api/story-tts", {
         method: "POST",
@@ -25,29 +25,25 @@ export default function Story({ data }) {
       });
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
-      audio.onended = () => setPlaying(false);
-      audio.play();
-      setAudioObj(audio);
+      const newAudio = new Audio(url);
+      newAudio.onended = () => setPlaying(false);
+      newAudio.play();
+      setAudio(newAudio);
+      setPlaying(true);
     } catch (err) {
       console.error(err);
-      setPlaying(false);
-      alert("Failed to play narration.");
+      alert("Failed to play audio");
     }
   };
 
-  const scrollToTop = () => {
-    if (typeof window !== "undefined") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
   return (
-    <div ref={storyRef} style={{ textAlign: "center", marginTop: "30px" }}>
-      <h2>{data.title}</h2>
+    <div style={{ textAlign: "center", marginTop: "30px" }}>
+      <h2 id="story-title">{data.title}</h2>
 
       <button
-        onClick={handlePlayAudio}
+        onClick={playAudio}
         style={{
           background: "#ffdace",
           color: "#ff7043",
@@ -62,21 +58,11 @@ export default function Story({ data }) {
       </button>
 
       <div style={{ marginTop: "20px" }}>
-        {data.content.split("\n").map((p, idx) => (
-          <p key={idx} style={{ margin: "15px 0", lineHeight: "1.6", textAlign: "center" }}>
+        {data.content.split("\n").map((p, i) => (
+          <p key={i} style={{ margin: "15px 0", lineHeight: "1.6", textAlign: "center" }}>
             {p}
           </p>
         ))}
-
-        {data.images &&
-          data.images.map((img, idx) => (
-            <img
-              key={idx}
-              src={img}
-              alt={`Story image ${idx + 1}`}
-              style={{ maxWidth: "100%", margin: "20px 0", borderRadius: "8px", display: "block", marginLeft: "auto", marginRight: "auto" }}
-            />
-          ))}
       </div>
 
       <button
