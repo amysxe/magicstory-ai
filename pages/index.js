@@ -3,69 +3,95 @@ import { useState } from "react";
 
 export default function Home() {
   const [category, setCategory] = useState("animal");
-  const [length, setLength] = useState("5-10");
+  const [length, setLength] = useState("5-10 min");
   const [story, setStory] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
-  const [running, setRunning] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  async function generate() {
-    setRunning(true);
-    setStory("");
-    setImageUrl("");
+  const handleGenerateStory = async () => {
+    setLoading(true);
+    setStory(""); // clear old story
+
     try {
-      const res = await fetch("/api/generate", {
+      const response = await fetch("/api/story", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ category, length })
+        body: JSON.stringify({ category, length }),
       });
-      const j = await res.json();
-      if (!res.ok) throw new Error(j.error || "Generation failed");
-      setStory(j.story || "");
-      setImageUrl(j.image || "");
-    } catch (e) {
-      setStory("Sorry — could not generate story. Check server logs.");
-      console.error(e);
-    } finally {
-      setRunning(false);
+
+      const data = await response.json();
+
+      if (data.story) {
+        setStory(data.story);
+      } else {
+        alert("Error: " + (data.error || "No story generated"));
+      }
+    } catch (err) {
+      alert("Request failed: " + err.message);
     }
-  }
+
+    setLoading(false);
+  };
 
   return (
-    <div style={{ maxWidth: 700, margin: "2rem auto", padding: 20, fontFamily: "sans-serif" }}>
-      <h1>MagicStory AI</h1>
-      <div style={{ margin: "1rem 0" }}>
-        <label>Category:{" "}
-          <select value={category} onChange={(e)=>setCategory(e.target.value)}>
-            <option value="animal">Animal</option>
-            <option value="fruit">Fruit</option>
-            <option value="person">Person</option>
-            <option value="mix">Mix</option>
-            <option value="random">Random</option>
-          </select>
-        </label>
-      </div>
+    <div className="min-h-screen flex flex-col justify-between bg-[#fffdf8] text-[#333] font-serif">
+      {/* Main Content */}
+      <main className="flex-grow container mx-auto p-6 max-w-3xl">
+        <h1 className="text-4xl font-bold text-center mb-6 text-[#444]">
+          Magic Story with AI ✨
+        </h1>
 
-      <div style={{ margin: "1rem 0" }}>
-        <label>Length:{" "}
-          <select value={length} onChange={(e)=>setLength(e.target.value)}>
-            <option value="5-10">5–10 min</option>
-            <option value="10-15">10–15 min</option>
-            <option value="15+">15+ min</option>
-          </select>
-        </label>
-      </div>
+        {/* Form */}
+        <div className="bg-white shadow-md rounded-2xl p-6 mb-6">
+          <label className="block mb-4">
+            <span className="font-semibold">Choose a character category:</span>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="mt-2 block w-full h-12 p-3 border rounded-md"
+            >
+              <option value="animal">Animal</option>
+              <option value="fruit">Fruit</option>
+              <option value="person">Person</option>
+              <option value="mix">Mix</option>
+              <option value="random">Random</option>
+            </select>
+          </label>
 
-      <button onClick={generate} disabled={running} style={{ padding: "8px 14px" }}>
-        {running ? "Creating..." : "Generate Story"}
-      </button>
+          <label className="block mb-4">
+            <span className="font-semibold">Choose story length:</span>
+            <select
+              value={length}
+              onChange={(e) => setLength(e.target.value)}
+              className="mt-2 block w-full h-12 p-3 border rounded-md"
+            >
+              <option value="5-10 min">5–10 min</option>
+              <option value="10-15 min">10–15 min</option>
+              <option value=">15 min">More than 15 min</option>
+            </select>
+          </label>
 
-      {story && (
-        <div style={{ marginTop: 20, padding: 12, borderRadius: 8, background: "#fff" }}>
-          <h2>Your Story</h2>
-          <p style={{ whiteSpace: "pre-line" }}>{story}</p>
-          {imageUrl && <img src={imageUrl} alt="illustration" style={{ width: "100%", borderRadius: 8, marginTop: 12 }} />}
+          <button
+            onClick={handleGenerateStory}
+            disabled={loading}
+            className="w-full h-12 bg-[#f28c0f] hover:bg-[#e07a00] text-white font-bold px-6 rounded-lg transition-colors"
+          >
+            {loading ? "Generating..." : "Generate Story"}
+          </button>
         </div>
-      )}
+
+        {/* Story Output */}
+        {story && (
+          <div className="bg-white shadow-lg rounded-2xl p-6">
+            <h2 className="text-2xl font-bold mb-4">Your Story</h2>
+            <p className="whitespace-pre-line leading-relaxed">{story}</p>
+          </div>
+        )}
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-[#f5f1ea] text-center py-4 border-t text-sm text-[#666]">
+        Copyright &copy; 2025 by Laniakea Digital
+      </footer>
     </div>
   );
 }
