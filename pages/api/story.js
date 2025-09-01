@@ -1,169 +1,35 @@
-import { useState, useRef, useEffect } from "react";
+import OpenAI from "openai";
 
-export default function Story({ data, language, onGenerateMore }) {
-  const [speaking, setSpeaking] = useState(false);
-  const [paused, setPaused] = useState(false);
-  const storyRef = useRef(null);
-  const utteranceRef = useRef(null);
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-  // Scroll to story when generated
-  useEffect(() => {
-    if (storyRef.current) {
-      storyRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [data]);
+export default async function handler(req, res) {
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const playStory = () => {
-    if (!data) return;
-    if (!("speechSynthesis" in window)) {
-      alert("Browser does not support Text-to-Speech.");
-      return;
-    }
+  const { category, length, language, moral } = req.body;
 
-    // Stop previous audio
-    window.speechSynthesis.cancel();
-    setPaused(false);
+  try {
+    const prompt = `
+      Write a ${length} story for kids in ${language}.
+      The story should be about ${category} and teach the moral value: ${moral}.
+      Include a clear title in the first line, then the content in paragraphs.
+    `;
 
-    const utterance = new SpeechSynthesisUtterance(data.content);
-    utterance.lang =
-      language === "Bahasa"
-        ? "id-ID"
-        : language === "German"
-        ? "de-DE"
-        : "en-US";
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 1000,
+    });
 
-    utterance.onstart = () => setSpeaking(true);
-    utterance.onend = () => {
-      setSpeaking(false);
-      setPaused(false);
-    };
+    const storyText = completion.choices[0].message.content;
 
-    utteranceRef.current = utterance;
-    window.speechSynthesis.speak(utterance);
-  };
+    // Split first line as title
+    const [titleLine, ...contentLines] = storyText.split("\n").filter(Boolean);
+    const title = titleLine.replace(/^Title:\s*/i, "");
+    const content = contentLines.join("\n");
 
-  const pauseStory = () => {
-    if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
-      window.speechSynthesis.pause();
-      setPaused(true);
-    }
-  };
-
-  const resumeStory = () => {
-    if (window.speechSynthesis.paused) {
-      window.speechSynthesis.resume();
-      setPaused(false);
-    }
-  };
-
-  const stopStory = () => {
-    window.speechSynthesis.cancel();
-    setSpeaking(false);
-    setPaused(false);
-  };
-
-  if (!data) return null;
-
-  return (
-    <div className="story-result" ref={storyRef}>
-      <h2 className="story-title">{data.title}</h2>
-
-      <div className="audio-controls">
-        {!speaking && (
-          <button onClick={playStory} className="button audio-button">
-            🔊 Play with audio
-          </button>
-        )}
-        {speaking && !paused && (
-          <button onClick={pauseStory} className="button audio-button">
-            ⏸ Pause
-          </button>
-        )}
-        {paused && (
-          <button onClick={resumeStory} className="button audio-button">
-            ▶ Resume
-          </button>
-        )}
-        {speaking && (
-          <button onClick={stopStory} className="button audio-button">
-            ⏹ Stop
-          </button>
-        )}
-      </div>
-
-      <div className="story-content">
-        {data.content.split(/\n+/).map((para, idx) => (
-          <p key={idx} className="story-paragraph">
-            {para}
-          </p>
-        ))}
-      </div>
-
-      <div className="story-buttons">
-        <button onClick={onGenerateMore} className="button">
-          Find More Story
-        </button>
-      </div>
-
-      <style jsx>{`
-        .story-result {
-          background: white;
-          padding: 30px;
-          border-radius: 12px;
-          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-          margin-bottom: 40px;
-        }
-        .story-title {
-          font-size: 28px;
-          margin-bottom: 12px;
-          text-align: center;
-          color: #4b2e2e;
-        }
-        .audio-controls {
-          display: flex;
-          justify-content: center;
-          gap: 10px;
-          margin-bottom: 20px;
-          flex-wrap: wrap;
-        }
-        .audio-button {
-          padding: 10px 16px;
-          font-size: 14px;
-        }
-        .story-content {
-          font-size: 18px;
-          line-height: 1.8;
-          color: #333;
-          margin-bottom: 30px;
-        }
-        .story-paragraph {
-          margin-bottom: 16px;
-        }
-        .story-buttons {
-          display: flex;
-          gap: 20px;
-          flex-wrap: wrap;
-          justify-content: center;
-        }
-        .button {
-          padding: 14px;
-          background: #ff7043;
-          color: white;
-          font-size: 18px;
-          border: none;
-          border-radius: 8px;
-          cursor: pointer;
-          transition: background 0.3s;
-        }
-        .button:hover {
-          background: #f4511e;
-        }
-        @media (max-width: 600px) {
-          .story-result {
-            padding: 20px;
-          }
-        }
-      `}</style>
-    </div>
-  );
+    res.status(200).json({ title, content });
+  } catch (err) {
+    console.error("Error generating story:", err);
+    res.status(500).json({ error: "Failed to generate story" });
+  }
 }
