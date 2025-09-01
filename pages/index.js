@@ -126,7 +126,7 @@ export default function Home() {
         </button>
       )}
 
-      <footer>Copyright &copy; 2025 by Laniakea Digital</footer>
+      <footer>Copyright &copy; 2025 by Laniakea Digital.</footer>
 
       <style jsx>{`
         .page-container {
