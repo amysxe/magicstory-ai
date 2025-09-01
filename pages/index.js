@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 
 export default function Home() {
   const [category, setCategory] = useState("Animal");
@@ -26,7 +26,7 @@ export default function Home() {
     }, 5000);
 
     try {
-      // 1. Generate story
+      // Generate story
       const res = await fetch("/api/story", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -35,7 +35,7 @@ export default function Home() {
       const data = await res.json();
       setStory(data);
 
-      // 2. Generate TTS
+      // Generate TTS
       const ttsResp = await fetch("/api/story-tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -52,31 +52,20 @@ export default function Home() {
     }
   };
 
-  const handlePlay = () => {
-    if (audioRef.current) audioRef.current.play();
-  };
-
-  const handlePause = () => {
-    if (audioRef.current) audioRef.current.pause();
-  };
-
-  const handleStop = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
-  };
+  const handlePlay = () => { if (audioRef.current) audioRef.current.play(); };
+  const handlePause = () => { if (audioRef.current) audioRef.current.pause(); };
+  const handleStop = () => { if (audioRef.current) { audioRef.current.pause(); audioRef.current.currentTime = 0; } };
 
   return (
     <div style={{ fontFamily: "Helvetica Neue", maxWidth: "900px", margin: "0 auto", padding: "20px" }}>
-      <h1>Magic Story With AI</h1>
-      <p>Generate fun and meaningful stories for kids!</p>
+      <h1 style={{ textAlign: "center" }}>Magic Story With AI</h1>
+      <p style={{ textAlign: "center" }}>Generate fun and meaningful stories for kids!</p>
 
       {/* Form Fields */}
-      <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", marginTop: "20px" }}>
         <div style={{ flex: "1 1 45%" }}>
           <label>Category</label>
-          <select value={category} onChange={(e) => setCategory(e.target.value)}>
+          <select value={category} onChange={(e) => setCategory(e.target.value)} style={{ width: "100%", padding: "8px", borderRadius: "8px" }}>
             <option>Animal</option>
             <option>Fruit</option>
             <option>Person</option>
@@ -85,15 +74,15 @@ export default function Home() {
         </div>
         <div style={{ flex: "1 1 45%" }}>
           <label>Length</label>
-         <select value={length} onChange={(e) => setLength(e.target.value)}>
+          <select value={length} onChange={(e) => setLength(e.target.value)} style={{ width: "100%", padding: "8px", borderRadius: "8px" }}>
             <option>5-10 min</option>
             <option>10-15 min</option>
-            <option>&gt;15 min</option>
+            <option>{">15 min"}</option>
           </select>
         </div>
         <div style={{ flex: "1 1 45%" }}>
           <label>Language</label>
-          <select value={language} onChange={(e) => setLanguage(e.target.value)}>
+          <select value={language} onChange={(e) => setLanguage(e.target.value)} style={{ width: "100%", padding: "8px", borderRadius: "8px" }}>
             <option>English</option>
             <option>Bahasa</option>
             <option>German</option>
@@ -101,7 +90,7 @@ export default function Home() {
         </div>
         <div style={{ flex: "1 1 45%" }}>
           <label>Moral</label>
-          <select value={moral} onChange={(e) => setMoral(e.target.value)}>
+          <select value={moral} onChange={(e) => setMoral(e.target.value)} style={{ width: "100%", padding: "8px", borderRadius: "8px" }}>
             <option>Kindness</option>
             <option>Honesty</option>
             <option>Patience</option>
@@ -120,6 +109,7 @@ export default function Home() {
           borderRadius: "12px",
           cursor: "pointer",
           fontSize: "16px",
+          border: "none",
         }}
       >
         Generate Story
