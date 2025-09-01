@@ -86,7 +86,11 @@ export default function Home() {
           <option>Friendship</option>
         </select>
 
-        <button onClick={generateStory} disabled={loading} className="button">
+        <button
+          onClick={generateStory}
+          disabled={loading}
+          className="button"
+        >
           {loading ? "Generating..." : "✨ Generate Story"}
         </button>
       </div>
