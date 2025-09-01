@@ -1,7 +1,7 @@
 import { useState } from "react";
 import dynamic from "next/dynamic";
 
-// Load Story dynamically to prevent server-side errors
+// Load Story dynamically to prevent SSR errors
 const Story = dynamic(() => import("../components/Story"), { ssr: false });
 
 export default function Home() {
@@ -14,6 +14,7 @@ export default function Home() {
 
   const generateStory = async () => {
     setLoading(true);
+    setData(null);
     try {
       const res = await fetch("/api/story", {
         method: "POST",
@@ -21,7 +22,14 @@ export default function Home() {
         body: JSON.stringify({ category, length, language, moral }),
       });
       const storyData = await res.json();
-      setData(storyData);
+      if (storyData.error) {
+        alert(storyData.error);
+      } else {
+        setData(storyData);
+        setTimeout(() => {
+          document.getElementById("story-title")?.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+      }
     } catch (err) {
       console.error(err);
       alert("Failed to generate story.");
@@ -43,9 +51,10 @@ export default function Home() {
         gap: "15px",
         justifyContent: "space-between"
       }}>
+        {/** Category */}
         <div style={{ flex: "1 1 45%" }}>
           <label>Category</label>
-          <select value={category} onChange={(e) => setCategory(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", marginTop: "5px" }}>
+          <select value={category} onChange={e => setCategory(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", marginTop: "5px" }}>
             <option>Animal</option>
             <option>Fruit</option>
             <option>Person</option>
@@ -54,27 +63,30 @@ export default function Home() {
           </select>
         </div>
 
+        {/** Length */}
         <div style={{ flex: "1 1 45%" }}>
           <label>Length</label>
-          <select value={length} onChange={(e) => setLength(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", marginTop: "5px" }}>
+          <select value={length} onChange={e => setLength(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", marginTop: "5px" }}>
             <option>5-10 min</option>
             <option>10-15 min</option>
             <option>&gt;15 min</option>
           </select>
         </div>
 
+        {/** Language */}
         <div style={{ flex: "1 1 45%" }}>
           <label>Language</label>
-          <select value={language} onChange={(e) => setLanguage(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", marginTop: "5px" }}>
+          <select value={language} onChange={e => setLanguage(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", marginTop: "5px" }}>
             <option>English</option>
             <option>Bahasa</option>
             <option>German</option>
           </select>
         </div>
 
+        {/** Moral */}
         <div style={{ flex: "1 1 45%" }}>
           <label>Moral</label>
-          <select value={moral} onChange={(e) => setMoral(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", marginTop: "5px" }}>
+          <select value={moral} onChange={e => setMoral(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", marginTop: "5px" }}>
             <option>Kindness</option>
             <option>Honesty</option>
             <option>Bravery</option>
