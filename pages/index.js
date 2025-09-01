@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export default function Home() {
   const [category, setCategory] = useState("Fruit");
@@ -7,6 +7,8 @@ export default function Home() {
   const [moral, setMoral] = useState("Kindness");
   const [storyData, setStoryData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const storyRef = useRef(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   const generateStory = async () => {
     setLoading(true);
@@ -31,6 +33,22 @@ export default function Home() {
       setLoading(false);
     }
   };
+
+  // Auto scroll to story
+  useEffect(() => {
+    if (storyData && storyRef.current) {
+      storyRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [storyData]);
+
+  // Show scroll to top button
+  useEffect(() => {
+    const handleScroll = () => setShowScrollTop(window.scrollY > 300);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
   return (
     <div className="container">
@@ -96,14 +114,13 @@ export default function Home() {
       </div>
 
       {storyData && (
-        <div className="story-result">
+        <div className="story-result" ref={storyRef}>
           <h2 className="story-title">{storyData.title}</h2>
-          <div
-            className="story-content"
-            dangerouslySetInnerHTML={{
-              __html: storyData.content.replace(/\n/g, "<br/><br/>"),
-            }}
-          />
+          <div className="story-content">
+            {storyData.content.split(/\n+/).map((para, idx) => (
+              <p key={idx} className="story-paragraph">{para}</p>
+            ))}
+          </div>
 
           {storyData.images?.length > 0 && (
             <div className="story-images">
@@ -122,6 +139,12 @@ export default function Home() {
             Find More Story
           </button>
         </div>
+      )}
+
+      {showScrollTop && (
+        <button className="scroll-top" onClick={scrollToTop}>
+          ⬆ Top
+        </button>
       )}
 
       <footer className="footer">
@@ -197,6 +220,9 @@ export default function Home() {
           color: #333;
           margin-bottom: 30px;
         }
+        .story-paragraph {
+          margin-bottom: 16px;
+        }
         .story-images {
           display: flex;
           flex-wrap: wrap;
@@ -218,6 +244,29 @@ export default function Home() {
           color: #666;
           padding: 20px 0;
           margin-bottom: 60px;
+        }
+        .scroll-top {
+          position: fixed;
+          bottom: 40px;
+          right: 40px;
+          padding: 12px 16px;
+          background: #ff7043;
+          color: white;
+          border: none;
+          border-radius: 50%;
+          cursor: pointer;
+          font-size: 18px;
+          box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+          transition: background 0.3s;
+        }
+        .scroll-top:hover {
+          background: #f4511e;
+        }
+        @media (max-width: 600px) {
+          .story-image {
+            width: 100%;
+            height: auto;
+          }
         }
       `}</style>
     </div>
