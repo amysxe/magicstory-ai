@@ -1,9 +1,8 @@
 // /pages/api/story.js
-
 import OpenAI from "openai";
 
 const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY, // Make sure this is set in .env.local or Vercel
 });
 
 export default async function handler(req, res) {
@@ -12,7 +11,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { category, length, language } = req.body;
+    const { category, length, language, moral } = req.body;
 
     // 1. Generate story text
     const completion = await client.chat.completions.create({
@@ -24,20 +23,21 @@ export default async function handler(req, res) {
         },
         {
           role: "user",
-          content: `Write a ${length} bedtime story in ${language} about ${category}. 
-          Start with the title on the first line, then the story paragraphs.`,
+          content: `Write a ${length} bedtime story in ${language} about ${category}.
+Include a title on the first line and make sure the story teaches the moral lesson of ${moral}.
+Separate paragraphs with newlines.`,
         },
       ],
     });
 
     const storyText = completion.choices[0].message.content.trim();
 
-    // 2. Extract title and story
+    // 2. Extract title and content
     const lines = storyText.split("\n").filter((line) => line.trim() !== "");
     const title = lines[0].replace(/^Title:\s*/i, "").trim();
     const content = lines.slice(1).join("\n\n");
 
-    // 3. Generate images (use try/catch so story still works if images fail)
+    // 3. Generate AI images (2 images)
     let imageUrls = [];
     try {
       const prompts = [
@@ -55,10 +55,10 @@ export default async function handler(req, res) {
       }
     } catch (imgError) {
       console.error("Image generation failed:", imgError.message);
-      imageUrls = []; // fallback: no images
+      imageUrls = []; // fallback if image generation fails
     }
 
-    // 4. Send back result
+    // 4. Send response
     res.status(200).json({
       title: title || "Your Bedtime Story",
       content,
