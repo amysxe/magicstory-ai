@@ -7,25 +7,23 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { text } = req.body;
+  const { text } = req.body || {};
+  if (!text) return res.status(400).json({ error: "Missing text for TTS" });
 
   try {
-    // Generate TTS audio
-    const ttsResponse = await openai.audio.speech.create({
-      model: "gpt-4o-mini-tts", // human-like narration
-      voice: "alloy",            // choose voice
+    const ttsRes = await openai.audio.speech.create({
+      model: "gpt-4o-mini-tts",
+      voice: "alloy",
       input: text,
     });
 
-    const buffer = Buffer.from(await ttsResponse.arrayBuffer());
+    const buffer = Buffer.from(await ttsRes.arrayBuffer());
     res.setHeader("Content-Type", "audio/mpeg");
     res.send(buffer);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to generate TTS audio" });
+    console.error("TTS API error:", err);
+    res.status(500).json({ error: "Failed to generate TTS" });
   }
 }
