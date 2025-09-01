@@ -52,7 +52,7 @@ export default function Home() {
           maxWidth: "900px",
           margin: "20px auto",
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+          gridTemplateColumns: "1fr 1fr", // 2 fields per row
           gap: "10px"
         }}>
           <div>
@@ -73,6 +73,7 @@ export default function Home() {
               <option>&gt;15 min</option>
             </select>
           </div>
+
           <div>
             <label>Language</label>
             <select value={language} onChange={e => setLanguage(e.target.value)} style={{ width: "100%", padding: "8px", marginTop: "4px", borderRadius: "8px" }}>
