@@ -1,5 +1,5 @@
 import { useState } from "react";
-//import Story from "../components/Story";
+import Story from "/components/Story";
 
 export default function Home() {
   const [category, setCategory] = useState("Fruit");
