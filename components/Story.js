@@ -128,6 +128,24 @@ export default function Story({ data, language, onGenerateMore }) {
           background: #ffdace;
           color: #ff7043;
         }
+        .play-audio-btn {
+  background: #ffdace;
+  color: #ff7043;
+  font-size: 14px;           /* Updated font size */
+  border: none;
+  border-radius: 8px;        /* Same as Generate Story button */
+  padding: 10px 16px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.3s;
+}
+
+.play-audio-btn:hover {
+  background: #ffcfb8;
+}
+
         .story-content {
           font-size: 18px;
           line-height: 1.8;
