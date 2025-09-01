@@ -29,12 +29,26 @@ export default function Home() {
   return (
     <div style={{ fontFamily: "Helvetica Neue", maxWidth: "900px", margin: "0 auto", padding: "20px" }}>
       <h1 style={{ textAlign: "center" }}>Magic Story With AI</h1>
-      <p style={{ textAlign: "center" }}>Generate fun and meaningful stories for kids!</p>
+      <p style={{ textAlign: "center", marginBottom: "30px" }}>Generate fun and meaningful stories for kids!</p>
 
-      <div style={{ background: "#f9f9f9", padding: "20px", borderRadius: "8px", display: "flex", flexWrap: "wrap", gap: "10px" }}>
+      <div style={{
+        background: "#f9f9f9",
+        padding: "20px",
+        borderRadius: "12px",
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "15px",
+        justifyContent: "space-between"
+      }}>
         <div style={{ flex: "1 1 45%" }}>
           <label>Category</label>
-          <select value={category} onChange={(e) => setCategory(e.target.value)} style={{ width: "100%", padding: "8px" }}>
+          <select value={category} onChange={(e) => setCategory(e.target.value)} style={{
+            width: "100%",
+            padding: "10px",
+            borderRadius: "6px",
+            border: "1px solid #ccc",
+            marginTop: "5px"
+          }}>
             <option>Animal</option>
             <option>Fruit</option>
             <option>Person</option>
@@ -42,25 +56,46 @@ export default function Home() {
             <option>Random</option>
           </select>
         </div>
+
         <div style={{ flex: "1 1 45%" }}>
           <label>Length</label>
-          <select value={length} onChange={(e) => setLength(e.target.value)} style={{ width: "100%", padding: "8px" }}>
+          <select value={length} onChange={(e) => setLength(e.target.value)} style={{
+            width: "100%",
+            padding: "10px",
+            borderRadius: "6px",
+            border: "1px solid #ccc",
+            marginTop: "5px"
+          }}>
             <option>5-10 min</option>
             <option>10-15 min</option>
             <option>&gt;15 min</option>
           </select>
         </div>
+
         <div style={{ flex: "1 1 45%" }}>
           <label>Language</label>
-          <select value={language} onChange={(e) => setLanguage(e.target.value)} style={{ width: "100%", padding: "8px" }}>
+          <select value={language} onChange={(e) => setLanguage(e.target.value)} style={{
+            width: "100%",
+            padding: "10px",
+            borderRadius: "6px",
+            border: "1px solid #ccc",
+            marginTop: "5px"
+          }}>
             <option>English</option>
             <option>Bahasa</option>
             <option>German</option>
           </select>
         </div>
+
         <div style={{ flex: "1 1 45%" }}>
           <label>Moral</label>
-          <select value={moral} onChange={(e) => setMoral(e.target.value)} style={{ width: "100%", padding: "8px" }}>
+          <select value={moral} onChange={(e) => setMoral(e.target.value)} style={{
+            width: "100%",
+            padding: "10px",
+            borderRadius: "6px",
+            border: "1px solid #ccc",
+            marginTop: "5px"
+          }}>
             <option>Kindness</option>
             <option>Honesty</option>
             <option>Bravery</option>
@@ -75,18 +110,21 @@ export default function Home() {
         style={{
           background: "#ff7043",
           color: "#fff",
-          padding: "12px 20px",
+          padding: "14px 0",
           border: "none",
-          borderRadius: "8px",
-          marginTop: "20px",
+          borderRadius: "12px",
+          marginTop: "25px",
           cursor: "pointer",
           width: "100%",
+          fontWeight: "bold",
+          fontSize: "16px"
         }}
       >
         {loading ? "Generating..." : "Generate Story"}
       </button>
 
       {data && <Story data={data} />}
+
       <footer style={{ textAlign: "center", marginTop: "60px" }}>
         Copyright &copy; 2025 by Laniakea Digital
       </footer>
