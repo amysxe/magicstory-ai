@@ -7,18 +7,20 @@ export default function Story({ data }) {
     if (!window.speechSynthesis) return alert("TTS not supported");
     window.speechSynthesis.cancel();
 
-    const utter = new SpeechSynthesisUtterance([data.title, ...data.content].join("\n"));
-    // Human-like voice (choose available voice on user's system)
+    const paragraphs = [data.title, ...data.content];
     const voices = window.speechSynthesis.getVoices();
     const humanVoice = voices.find(v => v.lang.startsWith("en") && v.name.includes("Google")) || voices[0];
-    if (humanVoice) utter.voice = humanVoice;
 
-    utter.rate = 1;
-    utter.pitch = 1;
-    utter.onend = () => setSpeaking(false);
+    paragraphs.forEach((p) => {
+      const utter = new SpeechSynthesisUtterance(p + " ... "); // pause
+      if (humanVoice) utter.voice = humanVoice;
+      utter.rate = 0.95;
+      utter.pitch = 1;
+      utter.onend = () => setSpeaking(false);
+      window.speechSynthesis.speak(utter);
+    });
 
     setSpeaking(true);
-    window.speechSynthesis.speak(utter);
   };
 
   const stopAudio = () => {
@@ -52,7 +54,7 @@ export default function Story({ data }) {
         <div key={i} style={{ margin: "20px 0", textAlign: "center" }}>
           <p style={{ margin: "10px 0", lineHeight: "1.6" }}>{p}</p>
           {data.images && data.images[i] && (
-            <img src={data.images[i]} alt={`Paragraph ${i+1}`} style={{ maxWidth: "100%", borderRadius: "12px", marginTop: "10px" }} />
+            <img src={data.images[i]} alt={`Paragraph ${i + 1}`} style={{ maxWidth: "100%", borderRadius: "12px", marginTop: "10px" }} />
           )}
         </div>
       ))}
