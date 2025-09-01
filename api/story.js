@@ -1,67 +1,47 @@
-import OpenAI from "openai";
+import { Configuration, OpenAIApi } from "openai";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const configuration = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+const openai = new OpenAIApi(configuration);
 
 export default async function handler(req, res) {
-  if (req.method !== "POST")
-    return res.status(405).json({ error: "Method not allowed" });
-
-  const { category, length, language, moral } = req.body;
-
   try {
-    console.log("Request body:", req.body);
+    const { category, length, language, moral } = req.body;
 
-    // 1. Generate story text
-    const storyPrompt = `
-Write a fun and meaningful story for kids.
-Category: ${category}
-Length: ${length}
-Language: ${language}
-Moral: ${moral}
-Return strictly as valid JSON:
-{
-  "title": "<story title>",
-  "content": ["<paragraph 1>", "<paragraph 2>", "..."]
-}
-`;
+    const prompt = `
+      Write a ${length} ${language} story for kids about ${category}.
+      Include a moral about ${moral}.
+      Return the story as plain text.
+      The first line should be the title.
+      Separate paragraphs with two newlines (\n\n).
+    `;
 
-    const storyResp = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: storyPrompt }],
-      max_tokens: 600,
+    const completion = await openai.createChatCompletion({
+      model: "gpt-4",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 1500,
     });
 
-    let storyData;
-    try {
-      storyData = JSON.parse(storyResp.choices[0].message.content);
-    } catch (err) {
-      console.error("JSON parse error:", err);
-      console.error("Raw response:", storyResp.choices[0].message.content);
+    const text = completion.data.choices[0].message.content;
 
-      // Fallback: wrap response in title + single paragraph
-      storyData = {
-        title: "A fun story",
-        content: [storyResp.choices[0].message.content],
-      };
-    }
+    // Split text into paragraphs
+    const lines = text.split("\n\n").filter(Boolean);
+    const title = lines.shift() || "Magic Story";
 
-    // 2. Generate cartoonish AI image (optional, failsafe)
-    let image_url = null;
-    try {
-      const imageResp = await openai.images.generate({
-        model: "gpt-image-1",
-        prompt: `Cartoonish illustration for a kids story titled "${storyData.title}" in ${language}, bright and fun style`,
-        size: "1024x1024",
-      });
-      image_url = imageResp.data[0]?.url || null;
-    } catch (err) {
-      console.warn("Image generation skipped:", err.message);
-      image_url = null;
-    }
+    // Generate a single AI cartoonish image representing the title
+    const imageResponse = await openai.createImage({
+      prompt: `Cartoonish illustration for: ${title}, colorful, fun, child-friendly`,
+      n: 1,
+      size: "512x512",
+      model: "gpt-image-1",
+    });
 
-    res.status(200).json({ ...storyData, image: image_url });
+    const imageUrl = imageResponse.data.data[0].url;
+
+    res.status(200).json({ title, paragraphs: lines, imageUrl });
   } catch (err) {
-    console.error("Story generation failed:", err);
+    console.error(err);
     res.status(500).json({ error: "Failed to generate story" });
   }
 }
