@@ -14,6 +14,7 @@ export default function Home() {
   const generateStory = async () => {
     setLoading(true);
     setStoryData(null);
+    window.speechSynthesis.cancel(); // stop previous audio
     try {
       const res = await fetch("/api/story", {
         method: "POST",
@@ -54,7 +55,6 @@ export default function Home() {
           gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
           gap: "10px"
         }}>
-          {/* Row 1 */}
           <div>
             <label>Category</label>
             <select value={category} onChange={e => setCategory(e.target.value)} style={{ width: "100%", padding: "8px", marginTop: "4px", borderRadius: "8px" }}>
@@ -73,8 +73,6 @@ export default function Home() {
               <option>&gt;15 min</option>
             </select>
           </div>
-
-          {/* Row 2 */}
           <div>
             <label>Language</label>
             <select value={language} onChange={e => setLanguage(e.target.value)} style={{ width: "100%", padding: "8px", marginTop: "4px", borderRadius: "8px" }}>
@@ -104,7 +102,7 @@ export default function Home() {
               padding: "12px 24px",
               borderRadius: "12px",
               fontSize: "16px",
-              border: "none", // removed border
+              border: "none",
               cursor: "pointer"
             }}
           >
