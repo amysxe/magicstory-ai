@@ -9,15 +9,20 @@ export default async function handler(req, res) {
   if (!text) return res.status(400).json({ error: "Missing text" });
 
   try {
-    const mp3 = await openai.audio.speech.create({
-      model: "gpt-4o-mini-tts",  // neural voice
-      voice: "alloy",            // human-like voice
+    // Map the selected language to a neural voice or TTS locale
+    let voice = "alloy"; // default English
+    if (language === "Bahasa") voice = "indonesian"; 
+    else if (language === "German") voice = "german"; 
+    else voice = "alloy"; // English fallback
+
+    const audioResponse = await openai.audio.speech.create({
+      model: "gpt-4o-mini-tts",
+      voice: voice,
       input: text,
       format: "mp3"
     });
 
-    // return as base64 or blob URL
-    res.status(200).json({ audio: mp3 });
+    res.status(200).json({ audio: audioResponse });
   } catch (err) {
     console.error("TTS error:", err);
     res.status(500).json({ error: "Failed to generate TTS" });
