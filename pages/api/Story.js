@@ -6,14 +6,12 @@ export default function Story({ data, language, onGenerateMore }) {
   const storyRef = useRef(null);
   const utteranceRef = useRef(null);
 
-  // Scroll to story on mount
   useEffect(() => {
     if (storyRef.current) {
       storyRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [data]);
 
-  // Play audio
   const playStory = () => {
     if (!data) return;
     if (!("speechSynthesis" in window)) {
@@ -21,7 +19,6 @@ export default function Story({ data, language, onGenerateMore }) {
       return;
     }
 
-    // Cancel any existing speech
     window.speechSynthesis.cancel();
     setPaused(false);
 
@@ -43,7 +40,6 @@ export default function Story({ data, language, onGenerateMore }) {
     window.speechSynthesis.speak(utterance);
   };
 
-  // Pause / Resume / Stop
   const pauseStory = () => {
     if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
       window.speechSynthesis.pause();
@@ -101,20 +97,6 @@ export default function Story({ data, language, onGenerateMore }) {
         ))}
       </div>
 
-      <div className="story-images">
-        {data.images.map((url, idx) => (
-          <img
-            key={idx}
-            src={url}
-            alt={`Story illustration ${idx + 1}`}
-            className="story-image"
-            onError={(e) => {
-              e.target.src = "https://via.placeholder.com/256x256?text=Image+not+found";
-            }}
-          />
-        ))}
-      </div>
-
       <div className="story-buttons">
         <button onClick={onGenerateMore} className="button">
           Find More Story
@@ -155,20 +137,6 @@ export default function Story({ data, language, onGenerateMore }) {
         .story-paragraph {
           margin-bottom: 16px;
         }
-        .story-images {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 20px;
-          margin-bottom: 30px;
-          justify-content: center;
-        }
-        .story-image {
-          width: 240px;
-          height: 240px;
-          object-fit: cover;
-          border-radius: 16px;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
         .story-buttons {
           display: flex;
           gap: 20px;
@@ -189,9 +157,8 @@ export default function Story({ data, language, onGenerateMore }) {
           background: #f4511e;
         }
         @media (max-width: 600px) {
-          .story-image {
-            width: 100%;
-            height: auto;
+          .story-result {
+            padding: 20px;
           }
         }
       `}</style>
