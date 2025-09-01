@@ -52,7 +52,7 @@ export default function Home() {
       const ttsResp = await fetch("/api/story-tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: data.content.join("\n"), language }),
+        body: JSON.stringify({ text: data.paragraphs.join("\n"), language }),
       });
       const ttsData = await ttsResp.json();
       setAudioUrl(ttsData.audio_url);
@@ -64,10 +64,6 @@ export default function Home() {
       setLoading(false);
     }
   };
-
-  const handlePlay = () => { if (audioRef.current) audioRef.current.play(); };
-  const handlePause = () => { if (audioRef.current) audioRef.current.pause(); };
-  const handleStop = () => { if (audioRef.current) { audioRef.current.pause(); audioRef.current.currentTime = 0; } };
 
   return (
     <div style={{ fontFamily: "Helvetica Neue", maxWidth: "900px", margin: "0 auto", padding: "20px" }}>
@@ -160,27 +156,23 @@ export default function Home() {
       {/* Generated Story */}
       {story && (
         <div style={{ marginTop: "40px", background: "#fff", padding: "20px", borderRadius: "12px", textAlign: "center" }}>
-          <h2>{story.title}</h2>
+          {/* Bold Title */}
+          <h2 style={{ fontWeight: "bold" }}>{story.title}</h2>
+
+          {/* Optional Representative Image */}
           {story.image && (
             <img src={story.image} alt={story.title} style={{ width: "100%", maxHeight: "300px", objectFit: "cover", margin: "20px 0" }} />
           )}
-          {story.content.map((p, idx) => (
+
+          {/* Story paragraphs */}
+          {story.paragraphs && story.paragraphs.map((p, idx) => (
             <p key={idx} style={{ margin: "16px 0", lineHeight: "1.6", textAlign: "center" }}>{p}</p>
           ))}
 
           {/* Audio Player */}
           {audioUrl && (
             <div style={{ marginTop: "20px" }}>
-              <audio ref={audioRef} src={audioUrl} />
-              <button onClick={handlePlay} style={{ marginRight: "10px", backgroundColor: "#ffdace", color: "#ff7043", padding: "8px 12px", borderRadius: "12px", fontSize: "14px" }}>
-                ▶ Play with audio
-              </button>
-              <button onClick={handlePause} style={{ marginRight: "10px", backgroundColor: "#ffdace", color: "#ff7043", padding: "8px 12px", borderRadius: "12px", fontSize: "14px" }}>
-                ⏸ Pause
-              </button>
-              <button onClick={handleStop} style={{ backgroundColor: "#ffdace", color: "#ff7043", padding: "8px 12px", borderRadius: "12px", fontSize: "14px" }}>
-                ⏹ Stop
-              </button>
+              <audio ref={audioRef} src={audioUrl} controls />
             </div>
           )}
         </div>
