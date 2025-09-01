@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export default function Home() {
   const [category, setCategory] = useState("Animal");
@@ -9,21 +9,34 @@ export default function Home() {
   const [story, setStory] = useState(null);
   const [audioUrl, setAudioUrl] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [loaderMessage, setLoaderMessage] = useState("Your story is being generated...");
+  const [loaderText, setLoaderText] = useState("Meaningful story makes memorable moment");
 
   const audioRef = useRef(null);
-  let longTimer;
+  let loaderInterval;
+
+  const loaderMessages = [
+    "Meaningful story makes memorable moment",
+    "Bedtime story will never fail the children",
+    "Worry no more with Magic Story"
+  ];
 
   const generateStory = async () => {
     setLoading(true);
     setStory(null);
     setAudioUrl(null);
-    setLoaderMessage("Your story is being generated...");
+    setLoaderText(loaderMessages[0]);
 
-    // Show longer message if takes >5s
-    longTimer = setTimeout(() => {
-      setLoaderMessage("This takes longer than usual. Please wait");
+    let idx = 1;
+    loaderInterval = setInterval(() => {
+      setLoaderText(loaderMessages[idx % loaderMessages.length]);
+      idx++;
     }, 5000);
+
+    // Stop any playing audio
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
 
     try {
       // Generate story
@@ -47,8 +60,8 @@ export default function Home() {
       console.error(err);
       alert("Failed to generate story or audio");
     } finally {
-      clearTimeout(longTimer);
-      setLoading(false); // loader gone only when both story + audio ready
+      clearInterval(loaderInterval);
+      setLoading(false);
     }
   };
 
@@ -61,8 +74,8 @@ export default function Home() {
       <h1 style={{ textAlign: "center" }}>Magic Story With AI</h1>
       <p style={{ textAlign: "center" }}>Generate fun and meaningful stories for kids!</p>
 
-      {/* Form Fields */}
-      <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", marginTop: "20px" }}>
+      {/* Fields Container */}
+      <div style={{ background: "#fff", padding: "20px", borderRadius: "12px", display: "flex", flexWrap: "wrap", gap: "20px", marginTop: "20px" }}>
         <div style={{ flex: "1 1 45%" }}>
           <label>Category</label>
           <select value={category} onChange={(e) => setCategory(e.target.value)} style={{ width: "100%", padding: "8px", borderRadius: "8px" }}>
@@ -122,20 +135,19 @@ export default function Home() {
           background: "rgba(255,255,255,0.95)", display: "flex", justifyContent: "center",
           alignItems: "center", zIndex: 9999, flexDirection: "column", textAlign: "center"
         }}>
-          <img src="/spinner.gif" alt="Loading..." style={{ width: "80px", height: "80px", marginBottom: "20px" }} />
-          <p style={{ fontSize: "18px", color: "#333" }}>{loaderMessage}</p>
+          <p style={{ fontSize: "20px", fontWeight: "bold", color: "#ff7043" }}>{loaderText}</p>
         </div>
       )}
 
       {/* Generated Story */}
       {story && (
-        <div style={{ marginTop: "40px", textAlign: "center" }}>
+        <div style={{ marginTop: "40px", background: "#fff", padding: "20px", borderRadius: "12px", textAlign: "center" }}>
           <h2>{story.title}</h2>
           {story.image && (
-            <img src={story.image} alt={story.title} style={{ width: "100%", maxHeight: "300px", objectFit: "cover", marginBottom: "20px" }} />
+            <img src={story.image} alt={story.title} style={{ width: "100%", maxHeight: "300px", objectFit: "cover", margin: "20px 0" }} />
           )}
           {story.content.map((p, idx) => (
-            <p key={idx} style={{ margin: "16px 0" }}>{p}</p>
+            <p key={idx} style={{ margin: "16px 0", lineHeight: "1.6", textAlign: "center" }}>{p}</p>
           ))}
 
           {/* Audio Player */}
