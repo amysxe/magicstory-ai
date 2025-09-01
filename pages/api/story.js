@@ -2,7 +2,7 @@
 import OpenAI from "openai";
 
 const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY, // Make sure this is set in .env.local or Vercel
+  apiKey: process.env.OPENAI_API_KEY, // Make sure this is set in Vercel Environment Variables
 });
 
 export default async function handler(req, res) {
@@ -23,9 +23,7 @@ export default async function handler(req, res) {
         },
         {
           role: "user",
-          content: `Write a ${length} bedtime story in ${language} about ${category}.
-Include a title on the first line and make sure the story teaches the moral lesson of ${moral}.
-Separate paragraphs with newlines.`,
+          content: `Write a ${length} bedtime story in ${language} about ${category}. Include a title on the first line and make sure the story teaches the moral lesson of ${moral}. Use short paragraphs separated by newlines.`,
         },
       ],
     });
@@ -34,38 +32,34 @@ Separate paragraphs with newlines.`,
 
     // 2. Extract title and content
     const lines = storyText.split("\n").filter((line) => line.trim() !== "");
-    const title = lines[0].replace(/^Title:\s*/i, "").trim();
+    const title = lines[0].replace(/^Title:\s*/i, "").replace(/\*\*/g, "").trim();
     const content = lines.slice(1).join("\n\n");
 
-    // 3. Generate AI images (2 images)
-    let imageUrls = [];
-    try {
-      const prompts = [
-        `A soft, pastel illustration of ${category}, child-friendly bedtime story style`,
-        `A magical cozy ending scene for a bedtime story about ${category}`,
-      ];
+    // 3. Generate 2 AI images
+    const prompts = [
+      `A colorful, child-friendly illustration of ${category} in a bedtime story style`,
+      `A cozy magical ending scene for a bedtime story about ${category}`,
+    ];
 
+    let images = [];
+    try {
       for (let prompt of prompts) {
-        const image = await client.images.generate({
+        const imgRes = await client.images.generate({
           model: "gpt-image-1",
           prompt,
           size: "512x512",
         });
-        imageUrls.push(image.data[0].url);
+        images.push(imgRes.data[0].url);
       }
-    } catch (imgError) {
-      console.error("Image generation failed:", imgError.message);
-      imageUrls = []; // fallback if image generation fails
+    } catch (err) {
+      console.error("Image generation failed:", err.message);
+      images = [];
     }
 
-    // 4. Send response
-    res.status(200).json({
-      title: title || "Your Bedtime Story",
-      content,
-      images: imageUrls,
-    });
-  } catch (error) {
-    console.error("Story generation error:", error.message);
+    // 4. Return response
+    res.status(200).json({ title, content, images });
+  } catch (err) {
+    console.error(err.message);
     res.status(500).json({ error: "Failed to generate story" });
   }
 }
