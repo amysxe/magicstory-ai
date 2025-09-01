@@ -33,7 +33,6 @@ export default function Home() {
       if (!res.ok) throw new Error("Failed to generate story");
       const data = await res.json();
 
-      // remove "Title:" prefix if present
       if (data.title.startsWith("Title:")) data.title = data.title.replace(/^Title:\s*/, "");
 
       setStoryData(data);
@@ -56,49 +55,44 @@ export default function Home() {
         <p>Generate fun and meaningful stories for kids!</p>
 
         <div className="form-box">
-  <div className="field">
-    <label>Category</label>
-    <select value={category} onChange={(e) => setCategory(e.target.value)}>
-      <option>Fruit</option>
-      <option>Animal</option>
-      <option>Person</option>
-      <option>Mix</option>
-      <option>Random</option>
-    </select>
-  </div>
+          <div className="field">
+            <label>Category</label>
+            <select value={category} onChange={(e) => setCategory(e.target.value)}>
+              <option>Fruit</option>
+              <option>Animal</option>
+              <option>Person</option>
+              <option>Mix</option>
+              <option>Random</option>
+            </select>
+          </div>
 
-  <div className="field">
-    <label>Story Length</label>
-    <select value={length} onChange={(e) => setLength(e.target.value)}>
-      <option>5-10 min</option>
-      <option>10-15 min</option>
-      <option>&gt;15 min</option>
-    </select>
-  </div>
+          <div className="field">
+            <label>Story Length</label>
+            <select value={length} onChange={(e) => setLength(e.target.value)}>
+              <option>5-10 min</option>
+              <option>10-15 min</option>
+              <option>&gt;15 min</option>
+            </select>
+          </div>
 
-  <div className="field">
-    <label>Language</label>
-    <select value={language} onChange={(e) => setLanguage(e.target.value)}>
-      <option>English</option>
-      <option>Bahasa</option>
-      <option>German</option>
-    </select>
-  </div>
+          <div className="field">
+            <label>Language</label>
+            <select value={language} onChange={(e) => setLanguage(e.target.value)}>
+              <option>English</option>
+              <option>Bahasa</option>
+              <option>German</option>
+            </select>
+          </div>
 
-  <div className="field">
-    <label>Moral</label>
-    <select value={moral} onChange={(e) => setMoral(e.target.value)}>
-      <option>Friendship</option>
-      <option>Honesty</option>
-      <option>Kindness</option>
-      <option>Sharing</option>
-    </select>
-  </div>
-
-  <button onClick={generateStory} disabled={loading}>
-    {loading ? "Generating..." : "Generate Story"}
-  </button>
-</div>
+          <div className="field">
+            <label>Moral</label>
+            <select value={moral} onChange={(e) => setMoral(e.target.value)}>
+              <option>Friendship</option>
+              <option>Honesty</option>
+              <option>Kindness</option>
+              <option>Sharing</option>
+            </select>
+          </div>
 
           <button onClick={generateStory} disabled={loading}>
             {loading ? "Generating..." : "Generate Story"}
