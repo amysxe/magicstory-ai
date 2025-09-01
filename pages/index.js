@@ -1,8 +1,8 @@
 import { useState } from "react";
-//import Story from "../components/Story";
+import Story from "../components/Story";
 
 export default function Home() {
-  const [category, setCategory] = useState("Animal");
+  const [category, setCategory] = useState("Fruit");
   const [length, setLength] = useState("5-10 min");
   const [language, setLanguage] = useState("English");
   const [moral, setMoral] = useState("Friendship");
@@ -10,14 +10,12 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
 
   const generateStory = async () => {
+    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+
+    setLoading(true);
+    setStoryData(null);
+
     try {
-      if ("speechSynthesis" in window) {
-        window.speechSynthesis.cancel(); // stop previous audio
-      }
-
-      setLoading(true);
-      setStoryData(null);
-
       const res = await fetch("/api/story", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -30,7 +28,7 @@ export default function Home() {
       setStoryData(data);
     } catch (err) {
       console.error(err);
-      alert("Failed to generate story. Try again.");
+      alert("Failed to generate story. Check your API key or try again.");
     } finally {
       setLoading(false);
     }
