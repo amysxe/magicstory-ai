@@ -1,59 +1,66 @@
+// /pages/api/story.js
+
 import OpenAI from "openai";
 
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY, // Make sure you set this in .env.local
+});
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
 
   try {
     const { category, length, language } = req.body;
 
-    // Step 1: Generate story
-    const storyPrompt = `Write a ${length} bedtime story in ${language} about ${category}.
-Make it engaging, imaginative, and child-friendly.
-Return only the story text with paragraphs.`;
-
-    const storyResp = await client.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: storyPrompt }],
+    // 1. Generate the story text
+    const completion = await client.chat.completions.create({
+      model: "gpt-4o-mini", // You can also use "gpt-4o" or "gpt-3.5-turbo"
+      messages: [
+        {
+          role: "system",
+          content: "You are a friendly bedtime story generator for kids.",
+        },
+        {
+          role: "user",
+          content: `Write a ${length} bedtime story in ${language} about ${category}. 
+          Start with the title on the first line, then the story paragraphs.`,
+        },
+      ],
     });
 
-    const story = storyResp.choices[0].message.content.trim();
+    const storyText = completion.choices[0].message.content.trim();
 
-    // Step 2: Generate 2–4 key scenes
-    const scenePrompt = `From this story, extract 3 short scene descriptions (max 10 words each) 
-that would look beautiful as illustrations: ${story}`;
+    // 2. Extract title and story body
+    const lines = storyText.split("\n").filter((line) => line.trim() !== "");
+    const title = lines[0].replace(/^Title:\s*/i, "").trim();
+    const content = lines.slice(1).join("\n\n");
 
-    const sceneResp = await client.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: scenePrompt }],
-    });
+    // 3. Generate images (2 images to avoid overload)
+    const prompts = [
+      `A beautiful illustration of ${category}, in bedtime story style, soft pastel colors, child friendly`,
+      `A magical ending scene for a bedtime story about ${category}, cozy and warm style`,
+    ];
 
-    const scenes = sceneResp.choices[0].message.content
-      .split("\n")
-      .map((s) => s.trim())
-      .filter((s) => s.length > 3)
-      .slice(0, 3); // keep 3 images max
-
-    // Step 3: Generate images for scenes
     const imageUrls = [];
-    for (const scene of scenes) {
-      const img = await client.images.generate({
+    for (let prompt of prompts) {
+      const image = await client.images.generate({
         model: "gpt-image-1",
-        prompt: `Children's book illustration, soft pastel style: ${scene}`,
+        prompt,
         size: "512x512",
       });
-      imageUrls.push(img.data[0].url);
+      imageUrls.push(image.data[0].url);
     }
 
-    // Step 4: Return result
+    // 4. Return response
     res.status(200).json({
-      title: `A Magical ${category} Story`,
-      content: story,
+      title: title || "Your Bedtime Story",
+      content: content,
       images: imageUrls,
     });
-  } catch (err) {
-    console.error(err);
+  } catch (error) {
+    console.error("Error generating story:", error);
     res.status(500).json({ error: "Failed to generate story" });
   }
 }
