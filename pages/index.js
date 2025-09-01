@@ -59,7 +59,7 @@ export default function Home() {
         >
           <option>5-10 min</option>
           <option>10-15 min</option>
-          <option>>15 min</option>
+          <option>&gt;15 min</option>
         </select>
 
         <label>Language</label>
