@@ -6,21 +6,20 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   const { text, language } = req.body;
-  if (!text) return res.status(400).json({ error: "Missing text" });
 
   try {
-    let voice = "alloy"; // default English
+    // Map language to voice
+    let voice = "alloy";
     if (language === "Bahasa") voice = "indonesian";
     else if (language === "German") voice = "german";
 
     const response = await openai.audio.speech.create({
       model: "gpt-4o-mini-tts",
-      voice: voice,
+      voice,
       input: text,
       format: "mp3"
     });
 
-    // Convert ArrayBuffer to base64
     const buffer = Buffer.from(await response.arrayBuffer());
     const base64Audio = buffer.toString("base64");
 
