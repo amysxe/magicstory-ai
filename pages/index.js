@@ -85,10 +85,10 @@ export default function Home() {
         </div>
         <div style={{ flex: "1 1 45%" }}>
           <label>Length</label>
-          <select value={length} onChange={(e) => setLength(e.target.value)}>
+         <select value={length} onChange={(e) => setLength(e.target.value)}>
             <option>5-10 min</option>
             <option>10-15 min</option>
-            <option>>15 min</option>
+            <option>&gt;15 min</option>
           </select>
         </div>
         <div style={{ flex: "1 1 45%" }}>
