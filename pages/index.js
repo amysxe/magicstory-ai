@@ -10,6 +10,7 @@ export default function Home() {
   const [storyData, setStoryData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showScroll, setShowScroll] = useState(false);
+  const [audioUtterance, setAudioUtterance] = useState(null);
 
   useEffect(() => {
     const handleScroll = () => setShowScroll(window.scrollY > 300);
@@ -19,8 +20,15 @@ export default function Home() {
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
+  const stopAudio = () => {
+    if (audioUtterance) {
+      window.speechSynthesis.cancel();
+      setAudioUtterance(null);
+    }
+  };
+
   const generateStory = async () => {
-    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+    stopAudio();
     setLoading(true);
     setStoryData(null);
 
@@ -105,6 +113,8 @@ export default function Home() {
             data={storyData}
             language={language}
             onGenerateMore={generateStory}
+            stopAudio={stopAudio}
+            setAudioUtterance={setAudioUtterance}
           />
         )}
       </div>
@@ -115,9 +125,7 @@ export default function Home() {
         </button>
       )}
 
-      <footer>
-        Copyright &copy; 2025 by Laniakea Digital
-      </footer>
+      <footer>Copyright &copy; 2025 by Laniakea Digital</footer>
 
       <style jsx>{`
         .page-container {
@@ -172,20 +180,23 @@ export default function Home() {
           background: #f4511e;
         }
         .scroll-top {
-  position: fixed;
-  bottom: 40px;
-  right: 30px;
-  width: 80px;              /* Updated width */
-  padding: 12px;
-  background: #ffdace;
-  color: #ff7043;
-  border: none;
-  border-radius: 8px;       /* Same as Generate Story button */
-  font-size: 16px;
-  cursor: pointer;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
-  z-index: 100;
-}
+          position: fixed;
+          bottom: 40px;
+          right: 30px;
+          width: 80px;
+          padding: 12px;
+          background: #ffdace;
+          color: #ff7043;
+          border: none;
+          border-radius: 8px;
+          font-size: 16px;
+          cursor: pointer;
+          box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+          z-index: 100;
+        }
+        .scroll-top:hover {
+          background: #ffcfb8;
+        }
         footer {
           text-align: center;
           padding: 20px 0;
