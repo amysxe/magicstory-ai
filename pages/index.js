@@ -56,32 +56,49 @@ export default function Home() {
         <p>Generate fun and meaningful stories for kids!</p>
 
         <div className="form-box">
-          <select value={category} onChange={(e) => setCategory(e.target.value)}>
-            <option>Fruit</option>
-            <option>Animal</option>
-            <option>Person</option>
-            <option>Mix</option>
-            <option>Random</option>
-          </select>
+  <div className="field">
+    <label>Category</label>
+    <select value={category} onChange={(e) => setCategory(e.target.value)}>
+      <option>Fruit</option>
+      <option>Animal</option>
+      <option>Person</option>
+      <option>Mix</option>
+      <option>Random</option>
+    </select>
+  </div>
 
-          <select value={length} onChange={(e) => setLength(e.target.value)}>
-            <option>5-10 min</option>
-            <option>10-15 min</option>
-            <option>&gt;15 min</option>
-          </select>
+  <div className="field">
+    <label>Story Length</label>
+    <select value={length} onChange={(e) => setLength(e.target.value)}>
+      <option>5-10 min</option>
+      <option>10-15 min</option>
+      <option>&gt;15 min</option>
+    </select>
+  </div>
 
-          <select value={language} onChange={(e) => setLanguage(e.target.value)}>
-            <option>English</option>
-            <option>Bahasa</option>
-            <option>German</option>
-          </select>
+  <div className="field">
+    <label>Language</label>
+    <select value={language} onChange={(e) => setLanguage(e.target.value)}>
+      <option>English</option>
+      <option>Bahasa</option>
+      <option>German</option>
+    </select>
+  </div>
 
-          <select value={moral} onChange={(e) => setMoral(e.target.value)}>
-            <option>Friendship</option>
-            <option>Honesty</option>
-            <option>Kindness</option>
-            <option>Sharing</option>
-          </select>
+  <div className="field">
+    <label>Moral</label>
+    <select value={moral} onChange={(e) => setMoral(e.target.value)}>
+      <option>Friendship</option>
+      <option>Honesty</option>
+      <option>Kindness</option>
+      <option>Sharing</option>
+    </select>
+  </div>
+
+  <button onClick={generateStory} disabled={loading}>
+    {loading ? "Generating..." : "Generate Story"}
+  </button>
+</div>
 
           <button onClick={generateStory} disabled={loading}>
             {loading ? "Generating..." : "Generate Story"}
@@ -131,6 +148,15 @@ export default function Home() {
           padding: 20px;
           border-radius: 12px;
           margin-bottom: 30px;
+        }
+        .field {
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+        }
+        .field label {
+          font-weight: bold;
+          text-align: left;
         }
         select,
         button {
