@@ -1,18 +1,18 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export default function Home() {
   const [category, setCategory] = useState("Animal");
   const [length, setLength] = useState("5-10 min");
   const [language, setLanguage] = useState("English");
   const [moral, setMoral] = useState("Kindness");
+
   const [story, setStory] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [loaderText, setLoaderText] = useState("Meaningful story makes memorable moment");
+  const [loaderText, setLoaderText] = useState("");
   const [audio, setAudio] = useState(null);
 
   const storyRef = useRef(null);
 
-  // Looping loader text
   const loaderMessages = [
     "Meaningful story makes memorable moment",
     "Bedtime story will never fail the children",
@@ -21,7 +21,7 @@ export default function Home() {
 
   const handleGenerate = async () => {
     if (audio) {
-      audio.pause();
+      window.speechSynthesis.cancel();
       setAudio(null);
     }
 
@@ -29,9 +29,10 @@ export default function Home() {
     setStory(null);
 
     let index = 0;
+    setLoaderText(loaderMessages[index]);
     const loaderInterval = setInterval(() => {
-      setLoaderText(loaderMessages[index]);
       index = (index + 1) % loaderMessages.length;
+      setLoaderText(loaderMessages[index]);
     }, 5000);
 
     try {
@@ -43,6 +44,8 @@ export default function Home() {
 
       const data = await res.json();
 
+      if (!data.title || !data.paragraphs) throw new Error("No story returned");
+
       setStory(data);
       clearInterval(loaderInterval);
       setLoading(false);
@@ -52,14 +55,13 @@ export default function Home() {
         storyRef.current?.scrollIntoView({ behavior: "smooth" });
       }, 100);
 
-      // Create audio narration
+      // Audio
       const utterance = new SpeechSynthesisUtterance(
         [data.title, ...data.paragraphs].join(". ")
       );
       utterance.lang = language === "English" ? "en-US" : language === "Bahasa" ? "id-ID" : "de-DE";
       utterance.rate = 1;
-      const synth = window.speechSynthesis;
-      synth.speak(utterance);
+      window.speechSynthesis.speak(utterance);
       setAudio(utterance);
     } catch (err) {
       console.error(err);
@@ -75,27 +77,25 @@ export default function Home() {
   };
 
   return (
-    <div style={{ fontFamily: "Helvetica Neue", padding: "20px", background: "#f9f9f9" }}>
+    <div style={{ fontFamily: "Helvetica Neue", background: "#f9f9f9", minHeight: "100vh", padding: "20px" }}>
       <h1 style={{ textAlign: "center" }}>Magic Story With AI</h1>
       <p style={{ textAlign: "center", marginBottom: "20px" }}>
         Generate fun and meaningful stories for kids!
       </p>
 
-      {/* Fields container */}
       <div style={{
         display: "flex",
         flexWrap: "wrap",
+        gap: "20px",
+        maxWidth: "900px",
+        margin: "0 auto 20px auto",
         background: "#fff",
         padding: "20px",
-        maxWidth: "900px",
-        margin: "0 auto",
-        borderRadius: "8px",
-        gap: "20px",
-        marginBottom: "20px"
+        borderRadius: "8px"
       }}>
         <div style={{ flex: "1 1 45%" }}>
           <label>Category</label>
-          <select value={category} onChange={(e) => setCategory(e.target.value)} style={{ width: "100%", padding: "8px" }}>
+          <select value={category} onChange={e => setCategory(e.target.value)} style={{ width: "100%", padding: "8px" }}>
             <option>Animal</option>
             <option>Fruit</option>
             <option>Person</option>
@@ -104,7 +104,7 @@ export default function Home() {
         </div>
         <div style={{ flex: "1 1 45%" }}>
           <label>Length</label>
-          <select value={length} onChange={(e) => setLength(e.target.value)} style={{ width: "100%", padding: "8px" }}>
+          <select value={length} onChange={e => setLength(e.target.value)} style={{ width: "100%", padding: "8px" }}>
             <option>5-10 min</option>
             <option>10-15 min</option>
             <option>&gt;15 min</option>
@@ -112,7 +112,7 @@ export default function Home() {
         </div>
         <div style={{ flex: "1 1 45%" }}>
           <label>Language</label>
-          <select value={language} onChange={(e) => setLanguage(e.target.value)} style={{ width: "100%", padding: "8px" }}>
+          <select value={language} onChange={e => setLanguage(e.target.value)} style={{ width: "100%", padding: "8px" }}>
             <option>English</option>
             <option>Bahasa</option>
             <option>German</option>
@@ -120,7 +120,7 @@ export default function Home() {
         </div>
         <div style={{ flex: "1 1 45%" }}>
           <label>Moral</label>
-          <select value={moral} onChange={(e) => setMoral(e.target.value)} style={{ width: "100%", padding: "8px" }}>
+          <select value={moral} onChange={e => setMoral(e.target.value)} style={{ width: "100%", padding: "8px" }}>
             <option>Kindness</option>
             <option>Friendship</option>
             <option>Honesty</option>
@@ -131,28 +131,43 @@ export default function Home() {
         <button
           onClick={handleGenerate}
           style={{
-            padding: "10px 20px",
+            flex: "1 1 100%",
+            marginTop: "10px",
+            padding: "10px",
             background: "#ff7043",
             color: "#fff",
             border: "none",
             borderRadius: "5px",
-            marginTop: "10px",
-            cursor: "pointer",
-            flex: "1 1 100%"
+            cursor: "pointer"
           }}
         >
           Generate Story
         </button>
       </div>
 
-      {/* Loader */}
+      {/* Full-page loader overlay */}
       {loading && (
-        <div style={{ textAlign: "center", margin: "20px", fontSize: "18px", color: "#555" }}>
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          background: "rgba(0,0,0,0.6)",
+          color: "#fff",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          fontSize: "24px",
+          zIndex: 9999,
+          textAlign: "center",
+          padding: "20px"
+        }}>
           {loaderText}
         </div>
       )}
 
-      {/* Story result */}
+      {/* Story display */}
       {story && (
         <div ref={storyRef} style={{
           maxWidth: "900px",
@@ -161,19 +176,11 @@ export default function Home() {
           padding: "20px",
           borderRadius: "8px"
         }}>
-          <h2 style={{ fontWeight: "bold", textAlign: "center" }}>{story.title}</h2>
-          {story.imageUrl && (
-            <img
-              src={story.imageUrl}
-              alt="Story illustration"
-              style={{ display: "block", margin: "10px auto", height: "250px", objectFit: "cover", borderRadius: "8px" }}
-            />
-          )}
+          <h2 style={{ textAlign: "center", fontWeight: "bold" }}>{story.title}</h2>
           {story.paragraphs.map((p, i) => (
-            <p key={i} style={{ textAlign: "center", lineHeight: "1.6", marginBottom: "15px" }}>{p}</p>
+            <p key={i} style={{ textAlign: "center", marginBottom: "15px", lineHeight: "1.6" }}>{p}</p>
           ))}
 
-          {/* Audio controls */}
           <button
             onClick={handleStopAudio}
             style={{
