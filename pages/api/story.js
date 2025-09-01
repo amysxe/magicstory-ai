@@ -2,7 +2,7 @@
 import OpenAI from "openai";
 
 const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY, // Make sure this is set in Vercel Environment Variables
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 export default async function handler(req, res) {
@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   try {
     const { category, length, language, moral } = req.body;
 
-    // 1. Generate story text
+    // 1️⃣ Generate story text
     const completion = await client.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
@@ -30,12 +30,12 @@ export default async function handler(req, res) {
 
     const storyText = completion.choices[0].message.content.trim();
 
-    // 2. Extract title and content
+    // 2️⃣ Extract title and content
     const lines = storyText.split("\n").filter((line) => line.trim() !== "");
     const title = lines[0].replace(/^Title:\s*/i, "").replace(/\*\*/g, "").trim();
     const content = lines.slice(1).join("\n\n");
 
-    // 3. Generate 2 AI images
+    // 3️⃣ Generate 2 AI images as base64
     const prompts = [
       `A colorful, child-friendly illustration of ${category} in a bedtime story style`,
       `A cozy magical ending scene for a bedtime story about ${category}`,
@@ -48,15 +48,16 @@ export default async function handler(req, res) {
           model: "gpt-image-1",
           prompt,
           size: "512x512",
+          response_format: "b64_json", // ensures it works without needing a public URL
         });
-        images.push(imgRes.data[0].url);
+        images.push(`data:image/png;base64,${imgRes.data[0].b64_json}`);
       }
     } catch (err) {
       console.error("Image generation failed:", err.message);
       images = [];
     }
 
-    // 4. Return response
+    // 4️⃣ Return response
     res.status(200).json({ title, content, images });
   } catch (err) {
     console.error(err.message);
