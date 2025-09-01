@@ -7,7 +7,6 @@ export default function Story({ data }) {
 
   const playAudio = async () => {
     if (audioRef.current && paused) {
-      // Resume if paused
       audioRef.current.play();
       setPaused(false);
       return;
@@ -26,15 +25,12 @@ export default function Story({ data }) {
         })
       });
 
-      const { audio } = await res.json();
+      const { audio } = await res.json(); // base64 string
 
-      const audioBlob = new Blob([audio], { type: "audio/mp3" });
-      const audioURL = URL.createObjectURL(audioBlob);
-
+      const audioURL = `data:audio/mp3;base64,${audio}`;
       const audioEl = new Audio(audioURL);
       audioRef.current = audioEl;
       audioEl.play();
-
       audioEl.onended = () => {
         setPlaying(false);
         setPaused(false);
@@ -142,7 +138,14 @@ export default function Story({ data }) {
       </div>
 
       {data.content.map((p, i) => (
-        <p key={i} style={{ margin: "20px 0", lineHeight: "1.6" }}>
+        <p
+          key={i}
+          style={{
+            margin: "20px 0",
+            lineHeight: "1.6",
+            textAlign: "center"
+          }}
+        >
           {p}
         </p>
       ))}
