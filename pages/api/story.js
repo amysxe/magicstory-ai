@@ -20,19 +20,18 @@ export default async function handler(req, res) {
         },
         {
           role: "user",
-          content: `Write a ${length} bedtime story in ${language} about ${category}. Include a title on the first line and make sure the story teaches the moral lesson of ${moral}. Use short paragraphs separated by newlines.`,
+          content: `Write a ${length} bedtime story in ${language} about ${category}. Include a title on the first line. Make sure the story teaches the moral lesson of ${moral}. Use short paragraphs separated by newlines.`,
         },
       ],
     });
 
     const storyText = completion.choices[0].message.content.trim();
 
-    // 2️⃣ Extract title and content
     const lines = storyText.split("\n").filter((line) => line.trim() !== "");
     const title = lines[0].replace(/^Title:\s*/i, "").replace(/\*\*/g, "").trim();
     const content = lines.slice(1).join("\n\n");
 
-    // 3️⃣ Generate 2 AI images (base64)
+    // 2️⃣ Generate 2 AI images (base64)
     const prompts = [
       `A colorful, child-friendly illustration of ${category} in a bedtime story style`,
       `A cozy magical ending scene for a bedtime story about ${category}`,
@@ -44,14 +43,18 @@ export default async function handler(req, res) {
         const imgRes = await client.images.generate({
           model: "gpt-image-1",
           prompt,
-          size: "256x256", // smaller to avoid timeout
+          size: "256x256",
           response_format: "b64_json",
         });
         images.push(`data:image/png;base64,${imgRes.data[0].b64_json}`);
       }
     } catch (err) {
       console.error("Image generation failed:", err.message);
-      images = [];
+      // fallback placeholders
+      images = [
+        "https://via.placeholder.com/256x256?text=Image+Unavailable",
+        "https://via.placeholder.com/256x256?text=Image+Unavailable",
+      ];
     }
 
     res.status(200).json({ title, content, images });
