@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Story from "../components/Story";
 
 export default function Home() {
   const [category, setCategory] = useState("Animal");
@@ -11,22 +12,29 @@ export default function Home() {
   const generateStory = async () => {
     setLoading(true);
     setStory(null);
+
     try {
       const res = await fetch("/api/story", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ category, length, language, moral }),
       });
+
       const data = await res.json();
+
       if (data.error) {
         alert(data.error);
       } else {
         setStory(data);
+        setTimeout(() => {
+          document.getElementById("story-title")?.scrollIntoView({ behavior: "smooth" });
+        }, 100);
       }
     } catch (err) {
       console.error(err);
       alert("Failed to generate story.");
     }
+
     setLoading(false);
   };
 
@@ -77,18 +85,14 @@ export default function Home() {
         </div>
       </div>
 
-      <button onClick={generateStory} style={{ background: "#ff7043", color: "#fff", padding: "14px 0", border: "none", borderRadius: "12px", marginTop: "25px", cursor: "pointer", width: "100%", fontWeight: "bold", fontSize: "16px" }}>
+      <button
+        onClick={generateStory}
+        style={{ background: "#ff7043", color: "#fff", padding: "14px 0", border: "none", borderRadius: "12px", marginTop: "25px", cursor: "pointer", width: "100%", fontWeight: "bold", fontSize: "16px" }}
+      >
         {loading ? "Generating..." : "Generate Story"}
       </button>
 
-      {story && (
-        <div style={{ marginTop: "30px", textAlign: "center" }}>
-          <h2>{story.title}</h2>
-          {story.content.split("\n").map((p, i) => (
-            <p key={i} style={{ margin: "10px 0", lineHeight: "1.6" }}>{p}</p>
-          ))}
-        </div>
-      )}
+      {story && <Story data={story} />}
 
       <footer style={{ textAlign: "center", marginTop: "60px" }}>
         Copyright &copy; 2025 by Laniakea Digital
