@@ -1,19 +1,21 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export default function Story({ data }) {
+  if (!data) return null; // safety check
+
   const [playing, setPlaying] = useState(false);
-  const [audioUtterance, setAudioUtterance] = useState(null);
+  const [audioObj, setAudioObj] = useState(null);
   const storyRef = useRef();
 
-  const stopAudio = () => {
-    if (audioUtterance) {
-      audioUtterance.pause();
-      setPlaying(false);
-    }
-  };
+  // Stop audio when new story is generated
+  useEffect(() => {
+    return () => {
+      if (audioObj) audioObj.pause();
+    };
+  }, [audioObj]);
 
   const handlePlayAudio = async () => {
-    stopAudio();
+    if (audioObj) audioObj.pause();
     setPlaying(true);
     try {
       const res = await fetch("/api/story-tts", {
@@ -26,7 +28,7 @@ export default function Story({ data }) {
       const audio = new Audio(url);
       audio.onended = () => setPlaying(false);
       audio.play();
-      setAudioUtterance(audio);
+      setAudioObj(audio);
     } catch (err) {
       console.error(err);
       setPlaying(false);
@@ -47,7 +49,7 @@ export default function Story({ data }) {
           background: "#ffdace",
           color: "#ff7043",
           padding: "8px 16px",
-          borderRadius: "8px",
+          borderRadius: "12px",
           fontSize: "14px",
           marginBottom: "20px",
           cursor: "pointer",
@@ -65,7 +67,12 @@ export default function Story({ data }) {
 
         {data.images &&
           data.images.map((img, idx) => (
-            <img key={idx} src={img} alt={`Story image ${idx + 1}`} style={{ maxWidth: "100%", margin: "20px 0", borderRadius: "8px" }} />
+            <img
+              key={idx}
+              src={img}
+              alt={`Story image ${idx + 1}`}
+              style={{ maxWidth: "100%", margin: "20px 0", borderRadius: "8px", display: "block", marginLeft: "auto", marginRight: "auto" }}
+            />
           ))}
       </div>
 
@@ -78,8 +85,9 @@ export default function Story({ data }) {
           background: "#ffdace",
           color: "#ff7043",
           padding: "8px 20px",
-          borderRadius: "8px",
+          borderRadius: "12px",
           cursor: "pointer",
+          width: "80px",
         }}
       >
         ⬆ Scroll to top
