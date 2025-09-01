@@ -1,8 +1,6 @@
 import OpenAI from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
@@ -29,10 +27,7 @@ export default async function handler(req, res) {
     // Generate one image per paragraph (up to 3 for cost-efficiency)
     const imagePromises = paragraphs.slice(0, 3).map(async (p) => {
       try {
-        const img = await openai.images.generate({
-          prompt: p,
-          size: "256x256",
-        });
+        const img = await openai.images.generate({ prompt: p, size: "256x256" });
         return img.data[0].url;
       } catch (err) {
         console.error("Image generation error:", err);
@@ -43,7 +38,6 @@ export default async function handler(req, res) {
     const images = await Promise.all(imagePromises);
 
     res.status(200).json({ title, content: paragraphs, images });
-
   } catch (err) {
     console.error("OpenAI API error:", err.response?.data || err.message || err);
     res.status(500).json({ error: "Failed to generate story" });
