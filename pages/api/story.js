@@ -1,4 +1,3 @@
-// pages/api/story.js
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -7,19 +6,11 @@ export default async function handler(req, res) {
   const { category, length, language } = req.body;
 
   if (!process.env.OPENAI_API_KEY) {
-    return res.status(500).json({ error: "Missing OpenAI API Key" });
+    return res.status(500).json({ error: "API key missing" });
   }
 
   try {
-    // --- Generate story text ---
-    const storyPrompt = `
-    Write a ${length} bedtime story for kids in ${language}.
-    The main character should be from this category: ${category}.
-    Make it fun, simple, and imaginative.
-    Return the story with a short title (first line).
-    `;
-
-    const storyResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -27,44 +18,40 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: "gpt-4o-mini",
-        messages: [{ role: "user", content: storyPrompt }],
-        temperature: 0.8,
+        messages: [
+          {
+            role: "system",
+            content: "You are a creative story generator for children.",
+          },
+          {
+            role: "user",
+            content: `Write a ${length} children's story in ${language}. The main character should be from the category: ${category}. Include a fun, imaginative title.`,
+          },
+        ],
       }),
     });
 
-    const storyData = await storyResponse.json();
+    const data = await response.json();
 
-    if (!storyData.choices || storyData.choices.length === 0) {
-      throw new Error("No story generated");
+    if (!response.ok) {
+      console.error("OpenAI error:", data);
+      return res
+        .status(response.status)
+        .json({ error: data.error?.message || "OpenAI request failed" });
     }
 
-    const storyText = storyData.choices[0].message.content.trim();
-    const [titleLine, ...contentLines] = storyText.split("\n");
-    const title = titleLine.replace(/\*\*/g, "").trim();
-    const content = contentLines.join("\n").trim();
+    const output = data.choices[0].message.content;
 
-    // --- Generate representative image ---
-    const imagePrompt = `Children's book illustration, ${category}, dreamy, colorful, soft style`;
-    const imageResponse = await fetch("https://api.openai.com/v1/images/generations", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-image-1",
-        prompt: imagePrompt,
-        size: "512x512",
-      }),
-    });
+    // Extract title + story (if GPT gives in markdown style)
+    const [firstLine, ...rest] = output.split("\n");
+    let title = firstLine.replace(/^\*+|\*+$/g, "").trim();
+    if (!title || title.length > 100) title = "Your AI Story";
 
-    const imageData = await imageResponse.json();
-    const imageUrl =
-      imageData.data && imageData.data.length > 0 ? imageData.data[0].url : null;
+    const content = rest.join("\n").trim();
 
-    res.status(200).json({ title, content, imageUrl });
-  } catch (error) {
-    console.error("Story generation error:", error);
-    res.status(500).json({ error: "Failed to generate story" });
+    return res.status(200).json({ title, content });
+  } catch (err) {
+    console.error("API route error:", err);
+    return res.status(500).json({ error: "Internal server error" });
   }
 }
