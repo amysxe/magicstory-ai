@@ -45,51 +45,53 @@ export default function Home() {
   };
 
   return (
-    <div className="container">
-      <h1>Magic Story with AI</h1>
-      <p>Generate fun and meaningful stories for kids!</p>
+    <div className="page-container">
+      <div className="container">
+        <h1>Magic Story with AI</h1>
+        <p>Generate fun and meaningful stories for kids!</p>
 
-      <div className="form-box">
-        <select value={category} onChange={(e) => setCategory(e.target.value)}>
-          <option>Fruit</option>
-          <option>Animal</option>
-          <option>Person</option>
-          <option>Mix</option>
-          <option>Random</option>
-        </select>
+        <div className="form-box">
+          <select value={category} onChange={(e) => setCategory(e.target.value)}>
+            <option>Fruit</option>
+            <option>Animal</option>
+            <option>Person</option>
+            <option>Mix</option>
+            <option>Random</option>
+          </select>
 
-        <select value={length} onChange={(e) => setLength(e.target.value)}>
-          <option>5-10 min</option>
-          <option>10-15 min</option>
-          <option>&gt;15 min</option>
-        </select>
+          <select value={length} onChange={(e) => setLength(e.target.value)}>
+            <option>5-10 min</option>
+            <option>10-15 min</option>
+            <option>&gt;15 min</option>
+          </select>
 
-        <select value={language} onChange={(e) => setLanguage(e.target.value)}>
-          <option>English</option>
-          <option>Bahasa</option>
-          <option>German</option>
-        </select>
+          <select value={language} onChange={(e) => setLanguage(e.target.value)}>
+            <option>English</option>
+            <option>Bahasa</option>
+            <option>German</option>
+          </select>
 
-        <select value={moral} onChange={(e) => setMoral(e.target.value)}>
-          <option>Friendship</option>
-          <option>Honesty</option>
-          <option>Kindness</option>
-          <option>Sharing</option>
-        </select>
+          <select value={moral} onChange={(e) => setMoral(e.target.value)}>
+            <option>Friendship</option>
+            <option>Honesty</option>
+            <option>Kindness</option>
+            <option>Sharing</option>
+          </select>
 
-        <button onClick={generateStory} disabled={loading}>
-          {loading ? "Generating..." : "Generate Story"}
-        </button>
+          <button onClick={generateStory} disabled={loading}>
+            {loading ? "Generating..." : "Generate Story"}
+          </button>
+        </div>
+
+        {storyData && (
+          <Story
+            key={storyData.title}
+            data={storyData}
+            language={language}
+            onGenerateMore={generateStory}
+          />
+        )}
       </div>
-
-      {storyData && (
-        <Story
-          key={storyData.title}
-          data={storyData}
-          language={language}
-          onGenerateMore={generateStory}
-        />
-      )}
 
       {showScroll && (
         <button className="scroll-top" onClick={scrollToTop}>
@@ -97,13 +99,23 @@ export default function Home() {
         </button>
       )}
 
+      <footer>
+        Copyright &copy; 2025 by Laniakea Digital
+      </footer>
+
       <style jsx>{`
+        .page-container {
+          display: flex;
+          flex-direction: column;
+          min-height: 100vh;
+        }
         .container {
           max-width: 900px;
           margin: auto;
           padding: 20px;
           font-family: "Helvetica Neue", sans-serif;
           text-align: center;
+          flex: 1;
         }
         .form-box {
           display: grid;
@@ -147,6 +159,14 @@ export default function Home() {
         }
         .scroll-top:hover {
           background: #ffcfb8;
+        }
+        footer {
+          text-align: center;
+          padding: 20px 0;
+          margin-top: auto;
+          background: #fdf6e3;
+          color: #555;
+          font-size: 16px;
         }
         @media (max-width: 600px) {
           .form-box {
