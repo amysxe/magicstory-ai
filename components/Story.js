@@ -3,8 +3,6 @@ import { useEffect, useRef, useState } from "react";
 export default function Story({ data, onGenerateMore, stopAudio, setAudioUtterance }) {
   const storyRef = useRef();
   const [playing, setPlaying] = useState(false);
-  const [images, setImages] = useState([]);
-  const [loadingImages, setLoadingImages] = useState(false);
 
   const paragraphs = data.content
     .split("\n")
@@ -15,41 +13,32 @@ export default function Story({ data, onGenerateMore, stopAudio, setAudioUtteran
     storyRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [data]);
 
-  // Generate images for each paragraph
-  useEffect(() => {
-    const fetchImages = async () => {
-      setLoadingImages(true);
-      try {
-        const res = await fetch("/api/story-images", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ paragraphs }),
-        });
-        const imgs = await res.json();
-        setImages(imgs);
-      } catch (err) {
-        console.error("Failed to generate images", err);
-      } finally {
-        setLoadingImages(false);
-      }
-    };
-    fetchImages();
-  }, [data]);
-
-  const handlePlayAudio = () => {
+  const handlePlayAudio = async () => {
     stopAudio();
-    const utterance = new SpeechSynthesisUtterance(data.content);
-    utterance.lang = "en-US"; 
-    utterance.onend = () => setPlaying(false);
-    window.speechSynthesis.speak(utterance);
-    setPlaying(true);
-    setAudioUtterance(utterance);
+    try {
+      setPlaying(true);
+      const res = await fetch("/api/story-tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: data.content }),
+      });
+      if (!res.ok) throw new Error("Failed to generate audio");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audio.onended = () => setPlaying(false);
+      audio.play();
+      setAudioUtterance(audio);
+    } catch (err) {
+      console.error(err);
+      setPlaying(false);
+      alert("Failed to play narration.");
+    }
   };
 
   const handleStopAudio = () => {
-    window.speechSynthesis.cancel();
+    stopAudio();
     setPlaying(false);
-    setAudioUtterance(null);
   };
 
   return (
@@ -68,11 +57,8 @@ export default function Story({ data, onGenerateMore, stopAudio, setAudioUtteran
         )}
       </div>
 
-      {loadingImages && <p>Loading images...</p>}
-
       {paragraphs.map((p, i) => (
         <div key={i} className="story-paragraph">
-          {images[i] && <img src={images[i]} alt="Story illustration" />}
           <p>{p}</p>
         </div>
       ))}
@@ -84,7 +70,7 @@ export default function Story({ data, onGenerateMore, stopAudio, setAudioUtteran
       <style jsx>{`
         .story-container {
           margin-top: 30px;
-          text-align: left;
+          text-align: center;
           font-family: "Helvetica Neue", sans-serif;
         }
         h2 {
@@ -97,11 +83,7 @@ export default function Story({ data, onGenerateMore, stopAudio, setAudioUtteran
         .story-paragraph p {
           line-height: 1.6;
           margin-top: 8px;
-        }
-        .story-paragraph img {
-          max-width: 100%;
-          border-radius: 8px;
-          margin-bottom: 8px;
+          text-align: center;
         }
         .audio-controls {
           margin-bottom: 15px;
