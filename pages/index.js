@@ -75,68 +75,75 @@ export default function Home() {
       <h1 style={{ textAlign: "center" }}>Magic Story With AI</h1>
       <p style={{ textAlign: "center" }}>Generate fun and meaningful stories for kids!</p>
 
-      {/* Fields Container */}
+      {/* Fields + Button Container */}
       <div style={{
         background: "#fff",
         padding: "20px",
         borderRadius: "12px",
         display: "flex",
-        flexWrap: "wrap",
+        flexDirection: "column",
         gap: "20px",
         marginTop: "20px"
       }}>
-        <div style={{ flex: "1 1 45%" }}>
-          <label>Category</label>
-          <select value={category} onChange={(e) => setCategory(e.target.value)} style={{ width: "100%", padding: "8px", borderRadius: "8px" }}>
-            <option>Animal</option>
-            <option>Fruit</option>
-            <option>Person</option>
-            <option>Mix</option>
-          </select>
+        {/* Row 1 */}
+        <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
+          <div style={{ flex: "1 1 45%" }}>
+            <label>Category</label>
+            <select value={category} onChange={(e) => setCategory(e.target.value)} style={{ width: "100%", padding: "8px", borderRadius: "8px" }}>
+              <option>Animal</option>
+              <option>Fruit</option>
+              <option>Person</option>
+              <option>Mix</option>
+            </select>
+          </div>
+          <div style={{ flex: "1 1 45%" }}>
+            <label>Length</label>
+            <select value={length} onChange={(e) => setLength(e.target.value)} style={{ width: "100%", padding: "8px", borderRadius: "8px" }}>
+              <option>5-10 min</option>
+              <option>10-15 min</option>
+              <option>{">15 min"}</option>
+            </select>
+          </div>
         </div>
-        <div style={{ flex: "1 1 45%" }}>
-          <label>Length</label>
-          <select value={length} onChange={(e) => setLength(e.target.value)} style={{ width: "100%", padding: "8px", borderRadius: "8px" }}>
-            <option>5-10 min</option>
-            <option>10-15 min</option>
-            <option>{">15 min"}</option>
-          </select>
-        </div>
-        <div style={{ flex: "1 1 45%" }}>
-          <label>Language</label>
-          <select value={language} onChange={(e) => setLanguage(e.target.value)} style={{ width: "100%", padding: "8px", borderRadius: "8px" }}>
-            <option>English</option>
-            <option>Bahasa</option>
-            <option>German</option>
-          </select>
-        </div>
-        <div style={{ flex: "1 1 45%" }}>
-          <label>Moral</label>
-          <select value={moral} onChange={(e) => setMoral(e.target.value)} style={{ width: "100%", padding: "8px", borderRadius: "8px" }}>
-            <option>Kindness</option>
-            <option>Honesty</option>
-            <option>Patience</option>
-            <option>Generosity</option>
-          </select>
-        </div>
-      </div>
 
-      {/* Generate Button aligned with fields */}
-      <div style={{ marginTop: "20px", marginLeft: "0" }}>
-        <button
-          onClick={generateStory}
-          style={{
-            backgroundColor: "#ff7043",
-            color: "#fff",
-            padding: "12px 24px",
-            borderRadius: "12px",
-            cursor: "pointer",
-            fontSize: "16px",
-            border: "none",
-          }}
-        >
-          Generate Story
-        </button>
+        {/* Row 2 */}
+        <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
+          <div style={{ flex: "1 1 45%" }}>
+            <label>Language</label>
+            <select value={language} onChange={(e) => setLanguage(e.target.value)} style={{ width: "100%", padding: "8px", borderRadius: "8px" }}>
+              <option>English</option>
+              <option>Bahasa</option>
+              <option>German</option>
+            </select>
+          </div>
+          <div style={{ flex: "1 1 45%" }}>
+            <label>Moral</label>
+            <select value={moral} onChange={(e) => setMoral(e.target.value)} style={{ width: "100%", padding: "8px", borderRadius: "8px" }}>
+              <option>Kindness</option>
+              <option>Honesty</option>
+              <option>Patience</option>
+              <option>Generosity</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Generate Button */}
+        <div style={{ marginTop: "20px", alignSelf: "flex-start" }}>
+          <button
+            onClick={generateStory}
+            style={{
+              backgroundColor: "#ff7043",
+              color: "#fff",
+              padding: "12px 24px",
+              borderRadius: "12px",
+              cursor: "pointer",
+              fontSize: "16px",
+              border: "none",
+            }}
+          >
+            Generate Story
+          </button>
+        </div>
       </div>
 
       {/* Loader Overlay */}
