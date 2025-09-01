@@ -6,40 +6,41 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   const { category, length, language, moral } = req.body;
-  if (!category || !length || !language || !moral)
-    return res.status(400).json({ error: "Missing required fields" });
 
   try {
-    const prompt = `Write a ${length} ${language} story for kids about "${category}" with a moral of "${moral}". Include a title as the first line. Separate paragraphs with line breaks.`;
+    // Generate story text
+    const storyPrompt = `
+Write a fun and meaningful story for kids.
+Category: ${category}
+Length: ${length}
+Language: ${language}
+Moral: ${moral}
+Return the output as JSON:
+{
+  "title": "<story title>",
+  "content": ["<paragraph 1>", "<paragraph 2>", "..."]
+}
+`;
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.8,
-      max_tokens: 800,
+    const storyResp = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: storyPrompt }],
     });
 
-    const storyText = response.choices[0].message.content;
-    const lines = storyText.split("\n").filter(l => l.trim() !== "");
-    const title = lines[0] || "Magic Story";
-    const paragraphs = lines.slice(1);
+    const storyData = JSON.parse(storyResp.choices[0].message.content);
 
-    // Generate ONE image for the title
-    let image = null;
-    try {
-      const imgResp = await openai.images.generate({
-        prompt: title,
-        size: "512x512",
-      });
-      image = imgResp.data[0].url;
-    } catch (err) {
-      console.error("Image generation error:", err);
-    }
+    // Generate cartoonish AI image for title
+    const imageResp = await openai.images.generate({
+      model: "gpt-image-1",
+      prompt: `Cartoonish illustration for a kids story titled "${storyData.title}" in ${language}, bright and fun style`,
+      size: "1024x1024"
+    });
 
-    res.status(200).json({ title, content: paragraphs, image });
+    const image_url = imageResp.data[0].url;
 
+    res.status(200).json({ ...storyData, image: image_url });
   } catch (err) {
-    console.error("OpenAI API error:", err.response?.data || err.message || err);
+    console.error(err);
     res.status(500).json({ error: "Failed to generate story" });
   }
 }
