@@ -138,7 +138,7 @@ const styles = {
     border: "1px solid #ddd",
     borderRadius: "8px",
   },
-  button: {
+    button: {
     backgroundColor: "#ff6600",
     color: "#fff",
     padding: "14px",
@@ -147,6 +147,12 @@ const styles = {
     borderRadius: "8px",
     cursor: "pointer",
     fontWeight: "bold",
+    transition: "background 0.3s ease",
+  },
+  buttonHover: {
+    backgroundColor: "#e65c00",
+  },
+
   },
   storyBox: {
     backgroundColor: "#fff",
