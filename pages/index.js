@@ -5,11 +5,29 @@ export default function Home() {
   const [category, setCategory] = useState("animal");
   const [length, setLength] = useState("5-10");
   const [story, setStory] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleGenerate = () => {
-    setStory(
-      `Once upon a time, a brave ${category} went on an adventure. It lasted about ${length} minutes and was full of fun, friendship, and magic!`
-    );
+  const handleGenerate = async () => {
+    setLoading(true);
+    setStory("");
+    setImageUrl("");
+
+    try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ category, length }),
+      });
+      const data = await res.json();
+      setStory(data.story);
+      setImageUrl(data.image);
+    } catch (err) {
+      console.error("Error generating story:", err);
+      setStory("Sorry, something went wrong.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -43,13 +61,16 @@ export default function Home() {
               </select>
             </label>
           </div>
-          <button onClick={handleGenerate}>Generate Story</button>
+          <button onClick={handleGenerate} disabled={loading}>
+            {loading ? "Creating..." : "Generate Story"}
+          </button>
         </div>
 
         {story && (
           <div className="story-box">
             <h2>Your Story</h2>
             <p>{story}</p>
+            {imageUrl && <img src={imageUrl} alt="Story Illustration" />}
           </div>
         )}
       </div>
@@ -108,6 +129,7 @@ export default function Home() {
           padding: 1.2rem;
           border-radius: 10px;
           border: 1px solid #e0e0e0;
+          margin-top: 1rem;
         }
         .story-box h2 {
           font-family: 'Libre Baskerville', serif;
@@ -117,6 +139,13 @@ export default function Home() {
         .story-box p {
           line-height: 1.6;
           color: #444;
+          white-space: pre-line;
+        }
+        .story-box img {
+          margin-top: 1rem;
+          width: 100%;
+          border-radius: 10px;
+          border: 1px solid #ddd;
         }
       `}</style>
     </>
