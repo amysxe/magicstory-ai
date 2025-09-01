@@ -1,31 +1,31 @@
 // pages/api/story.js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Only POST requests allowed" });
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { category, length } = req.body;
-
-  const prompt = `Write a fun bedtime story for kids about a ${category}.
-  The story should last about ${length} minutes.`;
+  const { category, length, language } = req.body;
 
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [{ role: "user", content: prompt }]
-      })
+    const prompt = `Write a children's bedtime story in ${language}.
+Category: ${category}.
+Length: ${length} minutes.
+Make the first line the story title.`;
+
+    const completion = await client.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }],
     });
 
-    const data = await response.json();
-
-    return res.status(200).json({ story: data.choices[0].message.content });
-  } catch (err) {
-    return res.status(500).json({ error: err.message });
+    const story = completion.choices[0].message.content;
+    res.status(200).json({ story });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 }
