@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Story from "../components/Story"; // path must be correct
+//import Story from "../components/Story";
 
 export default function Home() {
   const [category, setCategory] = useState("Fruit");
@@ -23,6 +23,8 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ category, length, language, moral }),
       });
+
+      if (!res.ok) throw new Error("Failed to generate story");
 
       const data = await res.json();
       setStoryData(data);
@@ -114,6 +116,11 @@ export default function Home() {
         }
         button:hover {
           background: #f4511e;
+        }
+        @media (max-width: 600px) {
+          .form-box {
+            grid-template-columns: 1fr;
+          }
         }
       `}</style>
     </div>
