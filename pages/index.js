@@ -14,7 +14,8 @@ export default function Home() {
   const generateStory = async () => {
     setLoading(true);
     setStoryData(null);
-    window.speechSynthesis.cancel(); // stop previous audio
+    window.speechSynthesis.cancel();
+
     try {
       const res = await fetch("/api/story", {
         method: "POST",
@@ -24,6 +25,7 @@ export default function Home() {
       const data = await res.json();
       if (data.error) alert(data.error);
       else setStoryData(data);
+
       setTimeout(() => topRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
     } catch (err) {
       alert("Failed to generate story");
@@ -52,7 +54,7 @@ export default function Home() {
           maxWidth: "900px",
           margin: "20px auto",
           display: "grid",
-          gridTemplateColumns: "1fr 1fr", // 2 fields per row
+          gridTemplateColumns: "1fr 1fr",
           gap: "10px"
         }}>
           <div>
