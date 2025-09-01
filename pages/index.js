@@ -34,20 +34,54 @@ export default function Home() {
   };
 
   return (
-    <div style={{ fontFamily: "Georgia, serif", background: "#faf8f5", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <div
+      style={{
+        fontFamily: "Georgia, serif",
+        background: "#faf8f5",
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       {/* Header */}
       <header style={{ textAlign: "center", padding: "30px 20px" }}>
         <h1 style={{ fontSize: "2.5rem", color: "#444" }}>Magic Story with AI</h1>
-        <p style={{ fontSize: "1.1rem", color: "#777" }}>Create bedtime stories with images in seconds</p>
+        <p style={{ fontSize: "1.1rem", color: "#777" }}>
+          Create bedtime stories with images in seconds
+        </p>
       </header>
 
       {/* Main Content */}
-      <main style={{ flex: "1", padding: "20px", maxWidth: "700px", margin: "0 auto" }}>
+      <main
+        style={{
+          flex: "1",
+          padding: "20px",
+          maxWidth: "900px", // widened
+          width: "100%",
+          margin: "0 auto",
+        }}
+      >
         {/* Form */}
-        <div style={{ background: "#fff", padding: "20px", borderRadius: "12px", boxShadow: "0 4px 10px rgba(0,0,0,0.05)", marginBottom: "30px" }}>
+        <div
+          style={{
+            background: "#fff",
+            padding: "20px",
+            borderRadius: "12px",
+            boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+            marginBottom: "30px",
+          }}
+        >
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
             {/* Category */}
-            <select value={category} onChange={(e) => setCategory(e.target.value)} style={{ padding: "12px", borderRadius: "8px", border: "1px solid #ccc" }}>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              style={{
+                padding: "12px",
+                borderRadius: "8px",
+                border: "1px solid #ccc",
+              }}
+            >
               <option value="fruit">Fruit</option>
               <option value="animal">Animal</option>
               <option value="person">Person</option>
@@ -56,14 +90,30 @@ export default function Home() {
             </select>
 
             {/* Length */}
-            <select value={length} onChange={(e) => setLength(e.target.value)} style={{ padding: "12px", borderRadius: "8px", border: "1px solid #ccc" }}>
+            <select
+              value={length}
+              onChange={(e) => setLength(e.target.value)}
+              style={{
+                padding: "12px",
+                borderRadius: "8px",
+                border: "1px solid #ccc",
+              }}
+            >
               <option value="5-10">5 - 10 min</option>
               <option value="10-15">10 - 15 min</option>
               <option value="15+">More than 15 min</option>
             </select>
 
             {/* Language */}
-            <select value={language} onChange={(e) => setLanguage(e.target.value)} style={{ padding: "12px", borderRadius: "8px", border: "1px solid #ccc" }}>
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              style={{
+                padding: "12px",
+                borderRadius: "8px",
+                border: "1px solid #ccc",
+              }}
+            >
               <option value="English">English</option>
               <option value="Bahasa">Bahasa</option>
               <option value="German">German</option>
@@ -92,9 +142,32 @@ export default function Home() {
 
         {/* Result */}
         {title && (
-          <div style={{ background: "#fff", padding: "25px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.05)", marginBottom: "25px" }}>
-            <h2 style={{ fontSize: "1.8rem", marginBottom: "15px", color: "#333" }}>{title}</h2>
-            <div style={{ fontSize: "1.1rem", lineHeight: "1.7", color: "#444", whiteSpace: "pre-line" }}>
+          <div
+            style={{
+              background: "#fff",
+              padding: "30px",
+              borderRadius: "12px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+              marginBottom: "25px",
+            }}
+          >
+            <h2
+              style={{
+                fontSize: "2rem",
+                marginBottom: "20px",
+                color: "#333",
+              }}
+            >
+              {title}
+            </h2>
+            <div
+              style={{
+                fontSize: "1.15rem",
+                lineHeight: "1.8",
+                color: "#444",
+                whiteSpace: "pre-line", // keeps paragraphs
+              }}
+            >
               {story}
             </div>
 
@@ -103,14 +176,14 @@ export default function Home() {
               onClick={generateStory}
               disabled={loading}
               style={{
-                marginTop: "20px",
+                marginTop: "25px",
                 background: "#ff914d",
                 color: "#fff",
-                padding: "10px 16px",
+                padding: "12px 18px",
                 border: "none",
                 borderRadius: "8px",
                 cursor: "pointer",
-                fontSize: "0.95rem",
+                fontSize: "1rem",
                 fontWeight: "bold",
               }}
             >
@@ -121,7 +194,16 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer style={{ textAlign: "center", padding: "20px", marginTop: "auto", marginBottom: "60px", fontSize: "0.9rem", color: "#777" }}>
+      <footer
+        style={{
+          textAlign: "center",
+          padding: "20px",
+          marginTop: "auto",
+          marginBottom: "60px",
+          fontSize: "0.9rem",
+          color: "#777",
+        }}
+      >
         Copyright &copy; 2025 by Laniakea Digital
       </footer>
     </div>
