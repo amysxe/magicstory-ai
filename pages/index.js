@@ -39,7 +39,7 @@ export default function Home() {
     }
 
     try {
-      // Generate story
+      // Generate story content
       const res = await fetch("/api/story", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -48,7 +48,7 @@ export default function Home() {
       const data = await res.json();
       setStory(data);
 
-      // Generate TTS
+      // Generate TTS audio
       const ttsResp = await fetch("/api/story-tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -71,11 +71,20 @@ export default function Home() {
 
   return (
     <div style={{ fontFamily: "Helvetica Neue", maxWidth: "900px", margin: "0 auto", padding: "20px" }}>
+      {/* Page Title */}
       <h1 style={{ textAlign: "center" }}>Magic Story With AI</h1>
       <p style={{ textAlign: "center" }}>Generate fun and meaningful stories for kids!</p>
 
       {/* Fields Container */}
-      <div style={{ background: "#fff", padding: "20px", borderRadius: "12px", display: "flex", flexWrap: "wrap", gap: "20px", marginTop: "20px" }}>
+      <div style={{
+        background: "#fff",
+        padding: "20px",
+        borderRadius: "12px",
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "20px",
+        marginTop: "20px"
+      }}>
         <div style={{ flex: "1 1 45%" }}>
           <label>Category</label>
           <select value={category} onChange={(e) => setCategory(e.target.value)} style={{ width: "100%", padding: "8px", borderRadius: "8px" }}>
@@ -112,21 +121,23 @@ export default function Home() {
         </div>
       </div>
 
-      <button
-        onClick={generateStory}
-        style={{
-          marginTop: "20px",
-          backgroundColor: "#ff7043",
-          color: "#fff",
-          padding: "12px 24px",
-          borderRadius: "12px",
-          cursor: "pointer",
-          fontSize: "16px",
-          border: "none",
-        }}
-      >
-        Generate Story
-      </button>
+      {/* Generate Button aligned with fields */}
+      <div style={{ marginTop: "20px", marginLeft: "0" }}>
+        <button
+          onClick={generateStory}
+          style={{
+            backgroundColor: "#ff7043",
+            color: "#fff",
+            padding: "12px 24px",
+            borderRadius: "12px",
+            cursor: "pointer",
+            fontSize: "16px",
+            border: "none",
+          }}
+        >
+          Generate Story
+        </button>
+      </div>
 
       {/* Loader Overlay */}
       {loading && (
