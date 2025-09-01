@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
-export default function Story({ data, onGenerateMore }) {
+export default function Story({ data, onGenerateMore, stopAudio, setAudioUtterance }) {
   const storyRef = useRef();
-  const [audio, setAudio] = useState(null);
   const [playing, setPlaying] = useState(false);
   const [images, setImages] = useState([]);
   const [loadingImages, setLoadingImages] = useState(false);
@@ -10,14 +9,13 @@ export default function Story({ data, onGenerateMore }) {
   const paragraphs = data.content
     .split("\n")
     .filter((p) => p.trim() !== "")
-    .slice(0, 5); // limit to 5 paragraphs for credit
+    .slice(0, 5);
 
-  // Auto-scroll to story
   useEffect(() => {
     storyRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [data]);
 
-  // Generate AI images
+  // Generate images for each paragraph
   useEffect(() => {
     const fetchImages = async () => {
       setLoadingImages(true);
@@ -39,27 +37,19 @@ export default function Story({ data, onGenerateMore }) {
   }, [data]);
 
   const handlePlayAudio = () => {
-    if (audio) {
-      audio.pause();
-      audio.currentTime = 0;
-      setPlaying(false);
-      setAudio(null);
-    } else {
-      const utterance = new SpeechSynthesisUtterance(data.content);
-      utterance.lang = "en-US"; // change based on selected language if needed
-      utterance.onend = () => setPlaying(false);
-      window.speechSynthesis.speak(utterance);
-      setAudio(utterance);
-      setPlaying(true);
-    }
+    stopAudio();
+    const utterance = new SpeechSynthesisUtterance(data.content);
+    utterance.lang = "en-US"; 
+    utterance.onend = () => setPlaying(false);
+    window.speechSynthesis.speak(utterance);
+    setPlaying(true);
+    setAudioUtterance(utterance);
   };
 
   const handleStopAudio = () => {
-    if (audio) {
-      window.speechSynthesis.cancel();
-      setPlaying(false);
-      setAudio(null);
-    }
+    window.speechSynthesis.cancel();
+    setPlaying(false);
+    setAudioUtterance(null);
   };
 
   return (
@@ -128,6 +118,9 @@ export default function Story({ data, onGenerateMore }) {
           align-items: center;
           gap: 6px;
           transition: background 0.3s;
+        }
+        .play-audio-btn:hover {
+          background: #ffcfb8;
         }
         .generate-more {
           margin-top: 20px;
