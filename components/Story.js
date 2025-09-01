@@ -125,6 +125,8 @@ export default function Story({ data, language, onGenerateMore }) {
         .audio-button {
           padding: 10px 16px;
           font-size: 14px;
+          background: #ffdace;
+          color: #ff7043;
         }
         .story-content {
           font-size: 18px;
