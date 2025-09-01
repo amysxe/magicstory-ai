@@ -3,7 +3,6 @@ import { Configuration, OpenAIApi } from "openai";
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
 });
-
 const openai = new OpenAIApi(configuration);
 
 export default async function handler(req, res) {
@@ -21,7 +20,7 @@ Return in JSON format:
   "title": "<title of the story>",
   "paragraphs": ["paragraph 1", "paragraph 2", "..."]
 }
-  `;
+`;
 
   try {
     const response = await openai.createChatCompletion({
@@ -31,12 +30,10 @@ Return in JSON format:
     });
 
     const text = response.data.choices[0].message.content;
-
-    // Ensure valid JSON
     const json = JSON.parse(text);
     res.status(200).json(json);
   } catch (err) {
-    console.error("Error generating story:", err);
+    console.error("Failed to generate story:", err);
     res.status(500).json({ error: "Failed to generate story" });
   }
 }
