@@ -16,8 +16,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    const prompt = `Create a ${length} ${language} story for kids about "${category}" with a moral of "${moral}". Include a title as the first line. Separate paragraphs with line breaks.`;
-    
+    const prompt = `Write a ${length} ${language} story for kids about "${category}" with a moral of "${moral}". Include a title as the first line. Separate paragraphs with line breaks.`;
+
     const response = await openai.createChatCompletion({
       model: "gpt-3.5-turbo",
       messages: [{ role: "user", content: prompt }],
@@ -32,7 +32,7 @@ export default async function handler(req, res) {
 
     res.status(200).json({ title, content });
   } catch (err) {
-    console.error(err);
+    console.error("OpenAI API error:", err);
     res.status(500).json({ error: "Failed to generate story" });
   }
 }
