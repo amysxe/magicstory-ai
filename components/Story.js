@@ -25,7 +25,7 @@ export default function Story({ data }) {
         })
       });
 
-      const { audio } = await res.json(); // base64 string
+      const { audio } = await res.json();
 
       const audioURL = `data:audio/mp3;base64,${audio}`;
       const audioEl = new Audio(audioURL);
@@ -77,7 +77,7 @@ export default function Story({ data }) {
           alt="Story title image"
           style={{
             width: "100%",
-            height: "250px", // fixed height
+            height: "250px",
             objectFit: "cover",
             borderRadius: "12px",
             margin: "20px 0"
