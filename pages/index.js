@@ -172,22 +172,20 @@ export default function Home() {
           background: #f4511e;
         }
         .scroll-top {
-          position: fixed;
-          bottom: 40px;
-          right: 30px;
-          padding: 12px 16px;
-          background: #ffdace;
-          color: #ff7043;
-          border: none;
-          border-radius: 50%;
-          font-size: 20px;
-          cursor: pointer;
-          box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
-          z-index: 100;
-        }
-        .scroll-top:hover {
-          background: #ffcfb8;
-        }
+  position: fixed;
+  bottom: 40px;
+  right: 30px;
+  width: 80px;              /* Updated width */
+  padding: 12px;
+  background: #ffdace;
+  color: #ff7043;
+  border: none;
+  border-radius: 8px;       /* Same as Generate Story button */
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+}
         footer {
           text-align: center;
           padding: 20px 0;
