@@ -1,47 +1,29 @@
 import { useState, useRef, useEffect } from "react";
-import Head from "next/head";
 
-export default function Home() {
-  const [category, setCategory] = useState("Fruit");
-  const [length, setLength] = useState("5-10 min");
-  const [language, setLanguage] = useState("English");
-  const [moral, setMoral] = useState("Kindness");
-  const [storyData, setStoryData] = useState(null);
-  const [loading, setLoading] = useState(false);
+export default function Story({ data, language, onGenerateMore }) {
   const [speaking, setSpeaking] = useState(false);
+  const [paused, setPaused] = useState(false);
   const storyRef = useRef(null);
-  const [showScrollTop, setShowScrollTop] = useState(false);
+  const utteranceRef = useRef(null);
 
-  const generateStory = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/story", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ category, length, language, moral }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setStoryData(data);
-      } else {
-        alert(data.error || "Failed to generate story");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Sorry, something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (storyRef.current) {
+      storyRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  };
+  }, [data]);
 
   const playStory = () => {
-    if (!storyData) return;
+    if (!data) return;
     if (!("speechSynthesis" in window)) {
       alert("Sorry, your browser does not support Text-to-Speech.");
       return;
     }
 
-    const utterance = new SpeechSynthesisUtterance(storyData.content);
+    // Cancel any ongoing speech
+    window.speechSynthesis.cancel();
+    setPaused(false);
+
+    const utterance = new SpeechSynthesisUtterance(data.content);
     utterance.lang =
       language === "Bahasa"
         ? "id-ID"
@@ -50,207 +32,90 @@ export default function Home() {
         : "en-US";
 
     utterance.onstart = () => setSpeaking(true);
-    utterance.onend = () => setSpeaking(false);
+    utterance.onend = () => {
+      setSpeaking(false);
+      setPaused(false);
+    };
 
-    window.speechSynthesis.cancel(); // stop any ongoing speech
+    utteranceRef.current = utterance;
     window.speechSynthesis.speak(utterance);
   };
 
-  useEffect(() => {
-    if (storyData && storyRef.current) {
-      storyRef.current.scrollIntoView({ behavior: "smooth" });
+  const pauseStory = () => {
+    if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+      window.speechSynthesis.pause();
+      setPaused(true);
     }
-  }, [storyData]);
+  };
 
-  useEffect(() => {
-    const handleScroll = () => setShowScrollTop(window.scrollY > 300);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const resumeStory = () => {
+    if (window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+      setPaused(false);
+    }
+  };
 
-  const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+  const stopStory = () => {
+    window.speechSynthesis.cancel();
+    setSpeaking(false);
+    setPaused(false);
+  };
+
+  if (!data) return null;
 
   return (
-    <div className="container">
-      <Head>
-        <title>Magic Story With AI</title>
-      </Head>
+    <div className="story-result" ref={storyRef}>
+      <h2 className="story-title">{data.title}</h2>
 
-      <h1 className="title">Magic Story with AI</h1>
-      <p className="subtitle">Generate fun and meaningful stories for kids!</p>
+      <div className="audio-controls">
+        {!speaking && (
+          <button onClick={playStory} className="button audio-button">
+            🔊 Play with audio
+          </button>
+        )}
+        {speaking && !paused && (
+          <button onClick={pauseStory} className="button audio-button">
+            ⏸ Pause
+          </button>
+        )}
+        {paused && (
+          <button onClick={resumeStory} className="button audio-button">
+            ▶ Resume
+          </button>
+        )}
+        {speaking && (
+          <button onClick={stopStory} className="button audio-button">
+            ⏹ Stop
+          </button>
+        )}
+      </div>
 
-      <div className="form-box">
-        <div className="form-row">
-          <div className="field">
-            <label>Category</label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="input"
-            >
-              <option>Fruit</option>
-              <option>Animal</option>
-              <option>Person</option>
-              <option>Mix</option>
-              <option>Random</option>
-            </select>
-          </div>
-          <div className="field">
-            <label>Story Length</label>
-            <select
-              value={length}
-              onChange={(e) => setLength(e.target.value)}
-              className="input"
-            >
-              <option>5-10 min</option>
-              <option>10-15 min</option>
-              <option>&gt;15 min</option>
-            </select>
-          </div>
-        </div>
+      <div className="story-content">
+        {data.content.split(/\n+/).map((para, idx) => (
+          <p key={idx} className="story-paragraph">
+            {para}
+          </p>
+        ))}
+      </div>
 
-        <div className="form-row">
-          <div className="field">
-            <label>Language</label>
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="input"
-            >
-              <option>English</option>
-              <option>Bahasa</option>
-              <option>German</option>
-            </select>
-          </div>
-          <div className="field">
-            <label>Moral Lesson</label>
-            <select
-              value={moral}
-              onChange={(e) => setMoral(e.target.value)}
-              className="input"
-            >
-              <option>Kindness</option>
-              <option>Honesty</option>
-              <option>Adventure</option>
-              <option>Bravery</option>
-              <option>Friendship</option>
-            </select>
-          </div>
-        </div>
+      <div className="story-images">
+        {data.images.map((url, idx) => (
+          <img
+            key={idx}
+            src={url}
+            alt={`Story illustration ${idx + 1}`}
+            className="story-image"
+          />
+        ))}
+      </div>
 
-        <button onClick={generateStory} disabled={loading} className="button">
-          {loading ? "Generating..." : "✨ Generate Story"}
+      <div className="story-buttons">
+        <button onClick={onGenerateMore} className="button">
+          Find More Story
         </button>
       </div>
 
-      {storyData && (
-        <div className="story-result" ref={storyRef}>
-          <h2 className="story-title">{storyData.title}</h2>
-          <div className="story-content">
-            {storyData.content.split(/\n+/).map((para, idx) => (
-              <p key={idx} className="story-paragraph">{para}</p>
-            ))}
-          </div>
-
-          <div className="story-images">
-            {storyData.images.map((url, idx) => (
-              <img
-                key={idx}
-                src={url}
-                alt={`Story illustration ${idx + 1}`}
-                className="story-image"
-              />
-            ))}
-          </div>
-
-          <button onClick={generateStory} className="button">
-            Find More Story
-          </button>
-
-          <button
-            onClick={playStory}
-            className="button"
-            style={{ marginTop: "10px" }}
-          >
-            {speaking ? "Speaking..." : "🔊 Play Story"}
-          </button>
-        </div>
-      )}
-
-      {showScrollTop && (
-        <button className="scroll-top" onClick={scrollToTop}>
-          ⬆ Top
-        </button>
-      )}
-
-      <footer className="footer">
-        Copyright &copy; 2025 by Laniakea Digital
-      </footer>
-
       <style jsx>{`
-        .container {
-          max-width: 900px;
-          margin: 0 auto;
-          padding: 40px 20px 100px;
-          font-family: "Helvetica Neue", sans-serif;
-          background: #faf6f1;
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-        }
-        .title {
-          font-size: 36px;
-          text-align: center;
-          margin-bottom: 10px;
-          color: #4b2e2e;
-        }
-        .subtitle {
-          text-align: center;
-          margin-bottom: 40px;
-          color: #6d4c41;
-          font-size: 18px;
-        }
-        .form-box {
-          background: white;
-          padding: 30px;
-          border-radius: 12px;
-          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-          display: flex;
-          flex-direction: column;
-          gap: 20px;
-          margin-bottom: 40px;
-        }
-        .form-row {
-          display: flex;
-          gap: 20px;
-          flex-wrap: wrap;
-        }
-        .field {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-        }
-        .input {
-          padding: 14px;
-          font-size: 16px;
-          border: 1px solid #ddd;
-          border-radius: 8px;
-          width: 100%;
-          box-sizing: border-box;
-        }
-        .button {
-          padding: 14px;
-          background: #ff7043;
-          color: white;
-          font-size: 18px;
-          border: none;
-          border-radius: 8px;
-          cursor: pointer;
-          transition: background 0.3s;
-        }
-        .button:hover {
-          background: #f4511e;
-        }
         .story-result {
           background: white;
           padding: 30px;
@@ -260,9 +125,20 @@ export default function Home() {
         }
         .story-title {
           font-size: 28px;
-          margin-bottom: 20px;
+          margin-bottom: 12px;
           text-align: center;
           color: #4b2e2e;
+        }
+        .audio-controls {
+          display: flex;
+          justify-content: center;
+          gap: 10px;
+          margin-bottom: 20px;
+          flex-wrap: wrap;
+        }
+        .audio-button {
+          padding: 10px 16px;
+          font-size: 14px;
         }
         .story-content {
           font-size: 18px;
@@ -287,35 +163,26 @@ export default function Home() {
           border-radius: 16px;
           box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-        .footer {
-          margin-top: auto;
-          text-align: center;
-          font-size: 14px;
-          color: #666;
-          padding: 20px 0;
-          margin-bottom: 60px;
+        .story-buttons {
+          display: flex;
+          gap: 20px;
+          flex-wrap: wrap;
+          justify-content: center;
         }
-        .scroll-top {
-          position: fixed;
-          bottom: 40px;
-          right: 40px;
-          padding: 12px 16px;
+        .button {
+          padding: 14px;
           background: #ff7043;
           color: white;
-          border: none;
-          border-radius: 50%;
-          cursor: pointer;
           font-size: 18px;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
           transition: background 0.3s;
         }
-        .scroll-top:hover {
+        .button:hover {
           background: #f4511e;
         }
         @media (max-width: 600px) {
-          .form-row {
-            flex-direction: column;
-          }
           .story-image {
             width: 100%;
             height: auto;
