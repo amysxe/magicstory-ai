@@ -1,9 +1,6 @@
-// /pages/api/story.js
 import OpenAI from "openai";
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -35,7 +32,7 @@ export default async function handler(req, res) {
     const title = lines[0].replace(/^Title:\s*/i, "").replace(/\*\*/g, "").trim();
     const content = lines.slice(1).join("\n\n");
 
-    // 3️⃣ Generate 2 AI images as base64
+    // 3️⃣ Generate 2 AI images (base64)
     const prompts = [
       `A colorful, child-friendly illustration of ${category} in a bedtime story style`,
       `A cozy magical ending scene for a bedtime story about ${category}`,
@@ -47,8 +44,8 @@ export default async function handler(req, res) {
         const imgRes = await client.images.generate({
           model: "gpt-image-1",
           prompt,
-          size: "512x512",
-          response_format: "b64_json", // ensures it works without needing a public URL
+          size: "256x256", // smaller to avoid timeout
+          response_format: "b64_json",
         });
         images.push(`data:image/png;base64,${imgRes.data[0].b64_json}`);
       }
@@ -57,7 +54,6 @@ export default async function handler(req, res) {
       images = [];
     }
 
-    // 4️⃣ Return response
     res.status(200).json({ title, content, images });
   } catch (err) {
     console.error(err.message);
