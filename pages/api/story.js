@@ -6,6 +6,7 @@ export default function Story({ data, language, onGenerateMore }) {
   const storyRef = useRef(null);
   const utteranceRef = useRef(null);
 
+  // Scroll to story when generated
   useEffect(() => {
     if (storyRef.current) {
       storyRef.current.scrollIntoView({ behavior: "smooth" });
@@ -19,6 +20,7 @@ export default function Story({ data, language, onGenerateMore }) {
       return;
     }
 
+    // Stop previous audio
     window.speechSynthesis.cancel();
     setPaused(false);
 
