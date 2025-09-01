@@ -1,20 +1,20 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function Story({ data }) {
-  if (!data) return null; // safety check
-
   const [playing, setPlaying] = useState(false);
   const [audioObj, setAudioObj] = useState(null);
   const storyRef = useRef();
 
-  // Stop audio when new story is generated
+  // Stop audio when component unmounts or new story renders
   useEffect(() => {
+    if (audioObj) audioObj.pause();
     return () => {
       if (audioObj) audioObj.pause();
     };
-  }, [audioObj]);
+  }, [data]);
 
   const handlePlayAudio = async () => {
+    if (typeof window === "undefined") return; // client only
     if (audioObj) audioObj.pause();
     setPlaying(true);
     try {
@@ -36,8 +36,11 @@ export default function Story({ data }) {
     }
   };
 
-  const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
-  const scrollToStory = () => storyRef.current.scrollIntoView({ behavior: "smooth" });
+  const scrollToTop = () => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
   return (
     <div ref={storyRef} style={{ textAlign: "center", marginTop: "30px" }}>
@@ -82,15 +85,15 @@ export default function Story({ data }) {
           position: "fixed",
           bottom: "20px",
           right: "20px",
+          width: "80px",
           background: "#ffdace",
           color: "#ff7043",
-          padding: "8px 20px",
+          padding: "8px 10px",
           borderRadius: "12px",
           cursor: "pointer",
-          width: "80px",
         }}
       >
-        ⬆ Scroll to top
+        ⬆ Top
       </button>
     </div>
   );
