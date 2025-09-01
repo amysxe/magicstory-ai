@@ -1,211 +1,212 @@
 import { useState } from "react";
 
 export default function Home() {
-  const [category, setCategory] = useState("fruit");
-  const [length, setLength] = useState("5-10");
+  const [topic, setTopic] = useState("");
+  const [characters, setCharacters] = useState("");
+  const [moral, setMoral] = useState("");
   const [language, setLanguage] = useState("English");
-  const [story, setStory] = useState("");
-  const [title, setTitle] = useState("");
+  const [story, setStory] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const generateStory = async () => {
+  const handleGenerate = async () => {
+    if (!topic || !characters || !moral) {
+      alert("Please fill in all fields!");
+      return;
+    }
     setLoading(true);
-    setStory("");
-    setTitle("");
+    setStory(null);
+
     try {
       const res = await fetch("/api/story", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ category, length, language }),
+        body: JSON.stringify({ topic, characters, moral, language }),
       });
+
       const data = await res.json();
       if (res.ok) {
-        setTitle(data.title || "Your Story");
-        setStory(data.content || "");
+        setStory(data);
       } else {
-        setTitle("Error");
-        setStory(data.error || "Something went wrong. Please try again.");
+        alert(data.error || "Failed to generate story");
       }
     } catch (err) {
-      setTitle("Error");
-      setStory("Server error. Please try again later.");
+      console.error(err);
+      alert("Sorry, something went wrong. Please try again.");
     }
     setLoading(false);
   };
 
   return (
-    <div
-      style={{
-        fontFamily: "Georgia, serif",
-        background: "#faf8f5",
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      {/* Header */}
-      <header style={{ textAlign: "center", padding: "30px 20px" }}>
-        <h1 style={{ fontSize: "2.5rem", color: "#444" }}>Magic Story with AI</h1>
-        <p style={{ fontSize: "1.1rem", color: "#777" }}>
-          Create bedtime stories with images in seconds
-        </p>
-      </header>
+    <div className="container">
+      <h1 className="title">Magic Story with AI</h1>
+      <p className="subtitle">
+        Create wonderful children’s stories with AI — choose your topic,
+        characters, and moral lesson.
+      </p>
 
-      {/* Main Content */}
-      <main
-        style={{
-          flex: "1",
-          padding: "20px",
-          maxWidth: "900px", // widened
-          width: "100%",
-          margin: "0 auto",
-        }}
-      >
-        {/* Form */}
-        <div
-          style={{
-            background: "#fff",
-            padding: "20px",
-            borderRadius: "12px",
-            boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
-            marginBottom: "30px",
-          }}
+      <div className="form">
+        <input
+          type="text"
+          placeholder="Story Topic"
+          value={topic}
+          onChange={(e) => setTopic(e.target.value)}
+          className="input"
+        />
+        <input
+          type="text"
+          placeholder="Characters"
+          value={characters}
+          onChange={(e) => setCharacters(e.target.value)}
+          className="input"
+        />
+        <input
+          type="text"
+          placeholder="Moral Lesson"
+          value={moral}
+          onChange={(e) => setMoral(e.target.value)}
+          className="input"
+        />
+        <select
+          className="input"
+          value={language}
+          onChange={(e) => setLanguage(e.target.value)}
         >
-          <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-            {/* Category */}
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              style={{
-                padding: "12px",
-                borderRadius: "8px",
-                border: "1px solid #ccc",
-              }}
-            >
-              <option value="fruit">Fruit</option>
-              <option value="animal">Animal</option>
-              <option value="person">Person</option>
-              <option value="mix">Mix</option>
-              <option value="random">Random</option>
-            </select>
+          <option>English</option>
+          <option>Bahasa</option>
+          <option>German</option>
+        </select>
 
-            {/* Length */}
-            <select
-              value={length}
-              onChange={(e) => setLength(e.target.value)}
-              style={{
-                padding: "12px",
-                borderRadius: "8px",
-                border: "1px solid #ccc",
-              }}
-            >
-              <option value="5-10">5 - 10 min</option>
-              <option value="10-15">10 - 15 min</option>
-              <option value="15+">More than 15 min</option>
-            </select>
+        <button onClick={handleGenerate} disabled={loading} className="button">
+          {loading ? "Generating..." : "Generate Story"}
+        </button>
+      </div>
 
-            {/* Language */}
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              style={{
-                padding: "12px",
-                borderRadius: "8px",
-                border: "1px solid #ccc",
-              }}
-            >
-              <option value="English">English</option>
-              <option value="Bahasa">Bahasa</option>
-              <option value="German">German</option>
-            </select>
-
-            {/* Button */}
-            <button
-              onClick={generateStory}
-              disabled={loading}
-              style={{
-                background: "#ff914d",
-                color: "#fff",
-                padding: "12px",
-                border: "none",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "1rem",
-                fontWeight: "bold",
-                transition: "0.3s",
-              }}
-            >
-              {loading ? "Generating..." : "Generate Story"}
-            </button>
-          </div>
-        </div>
-
-        {/* Result */}
-        {title && (
+      {story && (
+        <div className="story-result">
+          <h2 className="story-title">{story.title}</h2>
           <div
-            style={{
-              background: "#fff",
-              padding: "30px",
-              borderRadius: "12px",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-              marginBottom: "25px",
+            className="story-content"
+            dangerouslySetInnerHTML={{
+              __html: story.content.replace(/\n/g, "<br/><br/>"),
             }}
-          >
-            <h2
-              style={{
-                fontSize: "2rem",
-                marginBottom: "20px",
-                color: "#333",
-              }}
-            >
-              {title}
-            </h2>
-            <div
-              style={{
-                fontSize: "1.15rem",
-                lineHeight: "1.8",
-                color: "#444",
-                whiteSpace: "pre-line", // keeps paragraphs
-              }}
-            >
-              {story}
+          />
+
+          {/* Render images if available */}
+          {story.images && story.images.length > 0 && (
+            <div className="story-images">
+              {story.images.map((url, idx) => (
+                <img
+                  key={idx}
+                  src={url}
+                  alt={`Story illustration ${idx + 1}`}
+                  className="story-image"
+                />
+              ))}
             </div>
+          )}
 
-            {/* Find More Story */}
-            <button
-              onClick={generateStory}
-              disabled={loading}
-              style={{
-                marginTop: "25px",
-                background: "#ff914d",
-                color: "#fff",
-                padding: "12px 18px",
-                border: "none",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "1rem",
-                fontWeight: "bold",
-              }}
-            >
-              {loading ? "Loading..." : "Find More Story"}
-            </button>
-          </div>
-        )}
-      </main>
+          <button className="button" onClick={handleGenerate}>
+            Find More Story
+          </button>
+        </div>
+      )}
 
-      {/* Footer */}
-      <footer
-        style={{
-          textAlign: "center",
-          padding: "20px",
-          marginTop: "auto",
-          marginBottom: "60px",
-          fontSize: "0.9rem",
-          color: "#777",
-        }}
-      >
+      <footer className="footer">
         Copyright &copy; 2025 by Laniakea Digital
       </footer>
+
+      <style jsx>{`
+        .container {
+          max-width: 900px;
+          margin: 0 auto;
+          padding: 40px 20px 100px; /* extra padding for footer */
+          font-family: "Georgia", serif;
+          background: #faf6f1;
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+        }
+        .title {
+          font-size: 36px;
+          text-align: center;
+          margin-bottom: 10px;
+          color: #4b2e2e;
+        }
+        .subtitle {
+          text-align: center;
+          margin-bottom: 40px;
+          color: #6d4c41;
+          font-size: 18px;
+        }
+        .form {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          margin-bottom: 40px;
+        }
+        .input {
+          padding: 14px;
+          font-size: 16px;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          width: 100%;
+          box-sizing: border-box;
+        }
+        .button {
+          padding: 14px;
+          background: #ff7043;
+          color: white;
+          font-size: 18px;
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: background 0.3s;
+        }
+        .button:hover {
+          background: #f4511e;
+        }
+        .story-result {
+          background: white;
+          padding: 30px;
+          border-radius: 12px;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+          margin-bottom: 40px;
+        }
+        .story-title {
+          font-size: 28px;
+          margin-bottom: 20px;
+          text-align: center;
+          color: #4b2e2e;
+        }
+        .story-content {
+          font-size: 18px;
+          line-height: 1.8;
+          color: #333;
+          margin-bottom: 30px;
+        }
+        .story-images {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 20px;
+          margin-bottom: 30px;
+          justify-content: center;
+        }
+        .story-image {
+          width: 240px;
+          height: 240px;
+          object-fit: cover;
+          border-radius: 16px;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .footer {
+          margin-top: auto;
+          text-align: center;
+          font-size: 14px;
+          color: #666;
+          padding: 20px 0;
+          margin-bottom: 60px;
+        }
+      `}</style>
     </div>
   );
 }
