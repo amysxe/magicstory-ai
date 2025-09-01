@@ -1,71 +1,68 @@
 import { useState } from "react";
 
 export default function Home() {
-  const [topic, setTopic] = useState("");
-  const [characters, setCharacters] = useState("");
-  const [moral, setMoral] = useState("");
+  const [category, setCategory] = useState("Fruit");
+  const [length, setLength] = useState("5-10 min");
   const [language, setLanguage] = useState("English");
-  const [story, setStory] = useState(null);
+  const [moral, setMoral] = useState("Kindness");
+  const [storyData, setStoryData] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const handleGenerate = async () => {
-    if (!topic || !characters || !moral) {
-      alert("Please fill in all fields!");
-      return;
-    }
+  const generateStory = async () => {
     setLoading(true);
-    setStory(null);
 
     try {
       const res = await fetch("/api/story", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic, characters, moral, language }),
+        body: JSON.stringify({ category, length, language, moral }),
       });
 
       const data = await res.json();
       if (res.ok) {
-        setStory(data);
+        setStoryData(data);
       } else {
         alert(data.error || "Failed to generate story");
       }
     } catch (err) {
       console.error(err);
       alert("Sorry, something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
     <div className="container">
       <h1 className="title">Magic Story with AI</h1>
-      <p className="subtitle">
-        Create wonderful children’s stories with AI — choose your topic,
-        characters, and moral lesson.
-      </p>
+      <p className="subtitle">Generate fun and meaningful stories for kids!</p>
 
       <div className="form">
-        <input
-          type="text"
-          placeholder="Story Topic"
-          value={topic}
-          onChange={(e) => setTopic(e.target.value)}
+        <label>Category</label>
+        <select
           className="input"
-        />
-        <input
-          type="text"
-          placeholder="Characters"
-          value={characters}
-          onChange={(e) => setCharacters(e.target.value)}
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        >
+          <option>Fruit</option>
+          <option>Animal</option>
+          <option>Person</option>
+          <option>Mix</option>
+          <option>Random</option>
+        </select>
+
+        <label>Story Length</label>
+        <select
           className="input"
-        />
-        <input
-          type="text"
-          placeholder="Moral Lesson"
-          value={moral}
-          onChange={(e) => setMoral(e.target.value)}
-          className="input"
-        />
+          value={length}
+          onChange={(e) => setLength(e.target.value)}
+        >
+          <option>5-10 min</option>
+          <option>10-15 min</option>
+          <option>>15 min</option>
+        </select>
+
+        <label>Language</label>
         <select
           className="input"
           value={language}
@@ -76,25 +73,37 @@ export default function Home() {
           <option>German</option>
         </select>
 
-        <button onClick={handleGenerate} disabled={loading} className="button">
-          {loading ? "Generating..." : "Generate Story"}
+        <label>Moral Lesson</label>
+        <select
+          className="input"
+          value={moral}
+          onChange={(e) => setMoral(e.target.value)}
+        >
+          <option>Kindness</option>
+          <option>Honesty</option>
+          <option>Adventure</option>
+          <option>Bravery</option>
+          <option>Friendship</option>
+        </select>
+
+        <button onClick={generateStory} disabled={loading} className="button">
+          {loading ? "Generating..." : "✨ Generate Story"}
         </button>
       </div>
 
-      {story && (
+      {storyData && (
         <div className="story-result">
-          <h2 className="story-title">{story.title}</h2>
+          <h2 className="story-title">{storyData.title}</h2>
           <div
             className="story-content"
             dangerouslySetInnerHTML={{
-              __html: story.content.replace(/\n/g, "<br/><br/>"),
+              __html: storyData.content.replace(/\n/g, "<br/><br/>"),
             }}
           />
 
-          {/* Render images if available */}
-          {story.images && story.images.length > 0 && (
+          {storyData.images?.length > 0 && (
             <div className="story-images">
-              {story.images.map((url, idx) => (
+              {storyData.images.map((url, idx) => (
                 <img
                   key={idx}
                   src={url}
@@ -105,7 +114,7 @@ export default function Home() {
             </div>
           )}
 
-          <button className="button" onClick={handleGenerate}>
+          <button onClick={generateStory} className="button">
             Find More Story
           </button>
         </div>
@@ -119,7 +128,7 @@ export default function Home() {
         .container {
           max-width: 900px;
           margin: 0 auto;
-          padding: 40px 20px 100px; /* extra padding for footer */
+          padding: 40px 20px 100px;
           font-family: "Georgia", serif;
           background: #faf6f1;
           min-height: 100vh;
