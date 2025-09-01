@@ -1,182 +1,154 @@
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
-export default function Story({ data, language, onGenerateMore }) {
-  const [speaking, setSpeaking] = useState(false);
-  const [paused, setPaused] = useState(false);
-  const storyRef = useRef(null);
-  const utteranceRef = useRef(null);
+export default function Story({ data, onGenerateMore }) {
+  const storyRef = useRef();
+  const [audio, setAudio] = useState(null);
+  const [playing, setPlaying] = useState(false);
+  const [images, setImages] = useState([]);
+  const [loadingImages, setLoadingImages] = useState(false);
 
+  const paragraphs = data.content
+    .split("\n")
+    .filter((p) => p.trim() !== "")
+    .slice(0, 5); // limit to 5 paragraphs for credit
+
+  // Auto-scroll to story
   useEffect(() => {
-    if (storyRef.current) storyRef.current.scrollIntoView({ behavior: "smooth" });
+    storyRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [data]);
 
-  const playStory = () => {
-    if (!data) return;
-    if (!("speechSynthesis" in window)) {
-      alert("Browser does not support Text-to-Speech.");
-      return;
-    }
-
-    window.speechSynthesis.cancel();
-    setPaused(false);
-
-    const utterance = new SpeechSynthesisUtterance(data.content);
-    utterance.lang =
-      language === "Bahasa"
-        ? "id-ID"
-        : language === "German"
-        ? "de-DE"
-        : "en-US";
-
-    utterance.onstart = () => setSpeaking(true);
-    utterance.onend = () => {
-      setSpeaking(false);
-      setPaused(false);
+  // Generate AI images
+  useEffect(() => {
+    const fetchImages = async () => {
+      setLoadingImages(true);
+      try {
+        const res = await fetch("/api/story-images", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ paragraphs }),
+        });
+        const imgs = await res.json();
+        setImages(imgs);
+      } catch (err) {
+        console.error("Failed to generate images", err);
+      } finally {
+        setLoadingImages(false);
+      }
     };
+    fetchImages();
+  }, [data]);
 
-    utteranceRef.current = utterance;
-    window.speechSynthesis.speak(utterance);
-  };
-
-  const pauseStory = () => {
-    if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
-      window.speechSynthesis.pause();
-      setPaused(true);
+  const handlePlayAudio = () => {
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+      setPlaying(false);
+      setAudio(null);
+    } else {
+      const utterance = new SpeechSynthesisUtterance(data.content);
+      utterance.lang = "en-US"; // change based on selected language if needed
+      utterance.onend = () => setPlaying(false);
+      window.speechSynthesis.speak(utterance);
+      setAudio(utterance);
+      setPlaying(true);
     }
   };
 
-  const resumeStory = () => {
-    if (window.speechSynthesis.paused) {
-      window.speechSynthesis.resume();
-      setPaused(false);
+  const handleStopAudio = () => {
+    if (audio) {
+      window.speechSynthesis.cancel();
+      setPlaying(false);
+      setAudio(null);
     }
   };
-
-  const stopStory = () => {
-    window.speechSynthesis.cancel();
-    setSpeaking(false);
-    setPaused(false);
-  };
-
-  if (!data) return null;
 
   return (
-    <div className="story-result" ref={storyRef}>
-      <h2 className="story-title">{data.title}</h2>
+    <div ref={storyRef} className="story-container">
+      <h2>{data.title}</h2>
 
       <div className="audio-controls">
-        {!speaking && (
-          <button onClick={playStory} className="button audio-button">
+        {!playing ? (
+          <button className="play-audio-btn" onClick={handlePlayAudio}>
             🔊 Play with audio
           </button>
-        )}
-        {speaking && !paused && (
-          <button onClick={pauseStory} className="button audio-button">
-            ⏸ Pause
-          </button>
-        )}
-        {paused && (
-          <button onClick={resumeStory} className="button audio-button">
-            ▶ Resume
-          </button>
-        )}
-        {speaking && (
-          <button onClick={stopStory} className="button audio-button">
+        ) : (
+          <button className="play-audio-btn" onClick={handleStopAudio}>
             ⏹ Stop
           </button>
         )}
       </div>
 
-      <div className="story-content">
-        {data.content.split(/\n+/).map((para, idx) => (
-          <p key={idx} className="story-paragraph">
-            {para}
-          </p>
-        ))}
-      </div>
+      {loadingImages && <p>Loading images...</p>}
 
-      <div className="story-buttons">
-        <button onClick={onGenerateMore} className="button">
-          Find More Story
-        </button>
-      </div>
+      {paragraphs.map((p, i) => (
+        <div key={i} className="story-paragraph">
+          {images[i] && <img src={images[i]} alt="Story illustration" />}
+          <p>{p}</p>
+        </div>
+      ))}
+
+      <button className="generate-more" onClick={onGenerateMore}>
+        Find More Story
+      </button>
 
       <style jsx>{`
-        .story-result {
-          background: white;
-          padding: 30px;
-          border-radius: 12px;
-          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-          margin-bottom: 40px;
+        .story-container {
+          margin-top: 30px;
+          text-align: left;
+          font-family: "Helvetica Neue", sans-serif;
         }
-        .story-title {
+        h2 {
           font-size: 28px;
           margin-bottom: 12px;
-          text-align: center;
-          color: #4b2e2e;
-        }
-        .audio-controls {
-          display: flex;
-          justify-content: center;
-          gap: 10px;
-          margin-bottom: 20px;
-          flex-wrap: wrap;
-        }
-        .audio-button {
-          padding: 10px 16px;
-          font-size: 14px;
-          background: #ffdace;
-          color: #ff7043;
-        }
-        .play-audio-btn {
-  background: #ffdace;
-  color: #ff7043;
-  font-size: 14px;           /* Updated font size */
-  border: none;
-  border-radius: 8px;        /* Same as Generate Story button */
-  padding: 10px 16px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: background 0.3s;
-}
-
-.play-audio-btn:hover {
-  background: #ffcfb8;
-}
-
-        .story-content {
-          font-size: 18px;
-          line-height: 1.8;
-          color: #333;
-          margin-bottom: 30px;
         }
         .story-paragraph {
-          margin-bottom: 16px;
+          margin-bottom: 20px;
         }
-        .story-buttons {
-          display: flex;
-          gap: 20px;
-          flex-wrap: wrap;
-          justify-content: center;
+        .story-paragraph p {
+          line-height: 1.6;
+          margin-top: 8px;
         }
-        .button {
-          padding: 14px;
-          background: #ff7043;
-          color: white;
-          font-size: 18px;
+        .story-paragraph img {
+          max-width: 100%;
+          border-radius: 8px;
+          margin-bottom: 8px;
+        }
+        .audio-controls {
+          margin-bottom: 15px;
+        }
+        .play-audio-btn {
+          background: #ffdace;
+          color: #ff7043;
+          font-size: 14px;
           border: none;
           border-radius: 8px;
+          padding: 10px 16px;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          transition: background 0.3s;
+        }
+        .generate-more {
+          margin-top: 20px;
+          padding: 12px 16px;
+          font-size: 16px;
+          border-radius: 8px;
+          border: none;
+          background: #ff7043;
+          color: white;
           cursor: pointer;
           transition: background 0.3s;
         }
-        .button:hover {
+        .generate-more:hover {
           background: #f4511e;
         }
         @media (max-width: 600px) {
-          .story-result {
-            padding: 20px;
+          .story-container {
+            font-size: 16px;
+          }
+          .play-audio-btn {
+            font-size: 12px;
           }
         }
       `}</style>
