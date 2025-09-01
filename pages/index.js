@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Story from "../components/Story";
 
 export default function Home() {
@@ -8,10 +8,18 @@ export default function Home() {
   const [moral, setMoral] = useState("Friendship");
   const [storyData, setStoryData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showScroll, setShowScroll] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setShowScroll(window.scrollY > 300);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
   const generateStory = async () => {
     if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-
     setLoading(true);
     setStoryData(null);
 
@@ -21,10 +29,12 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ category, length, language, moral }),
       });
-
       if (!res.ok) throw new Error("Failed to generate story");
-
       const data = await res.json();
+
+      // remove "Title:" prefix if present
+      if (data.title.startsWith("Title:")) data.title = data.title.replace(/^Title:\s*/, "");
+
       setStoryData(data);
     } catch (err) {
       console.error(err);
@@ -81,6 +91,12 @@ export default function Home() {
         />
       )}
 
+      {showScroll && (
+        <button className="scroll-top" onClick={scrollToTop}>
+          ↑ Top
+        </button>
+      )}
+
       <style jsx>{`
         .container {
           max-width: 900px;
@@ -114,6 +130,23 @@ export default function Home() {
         }
         button:hover {
           background: #f4511e;
+        }
+        .scroll-top {
+          position: fixed;
+          bottom: 40px;
+          right: 30px;
+          padding: 12px 16px;
+          background: #ffdace;
+          color: #ff7043;
+          border: none;
+          border-radius: 50%;
+          font-size: 20px;
+          cursor: pointer;
+          box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+          z-index: 100;
+        }
+        .scroll-top:hover {
+          background: #ffcfb8;
         }
         @media (max-width: 600px) {
           .form-box {
