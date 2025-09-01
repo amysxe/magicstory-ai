@@ -9,7 +9,7 @@ export default function Home() {
 
   const handleGenerateStory = async () => {
     setLoading(true);
-    setStory(""); // clear old story
+    setStory("");
 
     try {
       const response = await fetch("/api/story", {
@@ -19,7 +19,6 @@ export default function Home() {
       });
 
       const data = await response.json();
-
       if (data.story) {
         setStory(data.story);
       } else {
@@ -33,21 +32,21 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-[#fffdf8] text-[#333] font-serif">
-      {/* Main Content */}
-      <main className="flex-grow container mx-auto p-6 max-w-3xl">
-        <h1 className="text-4xl font-bold text-center mb-6 text-[#444]">
+    <div className="min-h-screen flex flex-col bg-[#fffdf8] text-[#333] font-serif">
+      {/* Main */}
+      <main className="flex-grow container mx-auto p-6 max-w-3xl mb-[60px]">
+        <h1 className="text-4xl font-bold text-center mb-8 text-[#444]">
           Magic Story with AI ✨
         </h1>
 
-        {/* Form */}
-        <div className="bg-white shadow-md rounded-2xl p-6 mb-6">
-          <label className="block mb-4">
+        {/* Input Section */}
+        <div className="bg-white shadow-lg rounded-2xl p-6 mb-8 border border-[#eee]">
+          <label className="block mb-6">
             <span className="font-semibold">Choose a character category:</span>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="mt-2 block w-full h-12 p-3 border rounded-md"
+              className="mt-2 block w-full h-12 px-4 border border-[#ccc] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f28c0f] bg-[#fffdf8]"
             >
               <option value="animal">Animal</option>
               <option value="fruit">Fruit</option>
@@ -57,12 +56,12 @@ export default function Home() {
             </select>
           </label>
 
-          <label className="block mb-4">
+          <label className="block mb-6">
             <span className="font-semibold">Choose story length:</span>
             <select
               value={length}
               onChange={(e) => setLength(e.target.value)}
-              className="mt-2 block w-full h-12 p-3 border rounded-md"
+              className="mt-2 block w-full h-12 px-4 border border-[#ccc] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f28c0f] bg-[#fffdf8]"
             >
               <option value="5-10 min">5–10 min</option>
               <option value="10-15 min">10–15 min</option>
@@ -73,23 +72,25 @@ export default function Home() {
           <button
             onClick={handleGenerateStory}
             disabled={loading}
-            className="w-full h-12 bg-[#f28c0f] hover:bg-[#e07a00] text-white font-bold px-6 rounded-lg transition-colors"
+            className="w-full h-12 bg-[#f28c0f] hover:bg-[#e07a00] text-white font-bold rounded-xl shadow-md transition-colors"
           >
             {loading ? "Generating..." : "Generate Story"}
           </button>
         </div>
 
-        {/* Story Output */}
+        {/* Output */}
         {story && (
-          <div className="bg-white shadow-lg rounded-2xl p-6">
+          <div className="bg-white shadow-lg rounded-2xl p-6 border border-[#eee]">
             <h2 className="text-2xl font-bold mb-4">Your Story</h2>
-            <p className="whitespace-pre-line leading-relaxed">{story}</p>
+            <p className="whitespace-pre-line leading-relaxed text-lg text-[#444]">
+              {story}
+            </p>
           </div>
         )}
       </main>
 
       {/* Footer */}
-      <footer className="bg-[#f5f1ea] text-center py-4 border-t text-sm text-[#666]">
+      <footer className="bg-[#f5f1ea] text-center py-4 border-t text-sm text-[#666] mt-auto">
         Copyright &copy; 2025 by Laniakea Digital
       </footer>
     </div>
