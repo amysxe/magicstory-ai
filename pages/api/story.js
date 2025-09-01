@@ -15,7 +15,7 @@ export default function Story({ data, language, onGenerateMore }) {
   const playStory = () => {
     if (!data) return;
     if (!("speechSynthesis" in window)) {
-      alert("Sorry, your browser does not support Text-to-Speech.");
+      alert("Browser does not support Text-to-Speech.");
       return;
     }
 
