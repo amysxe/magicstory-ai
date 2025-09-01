@@ -7,7 +7,9 @@ export default function Home() {
   const [moral, setMoral] = useState("Kindness");
   const [story, setStory] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [loaderText, setLoaderText] = useState("Meaningful story makes memorable moment");
+  const [loaderText, setLoaderText] = useState(
+    "Meaningful story makes memorable moment"
+  );
   const audioRef = useRef(null);
   const storyTitleRef = useRef(null);
 
@@ -28,9 +30,10 @@ export default function Home() {
   }, [loading]);
 
   const generateStory = async () => {
+    // Stop any playing audio
     if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
+      speechSynthesis.cancel();
+      audioRef.current = null;
     }
 
     setStory(null);
@@ -47,7 +50,7 @@ export default function Home() {
       setStory(data);
       setLoading(false);
 
-      // Auto scroll to story title
+      // Auto-scroll to story title
       setTimeout(() => {
         storyTitleRef.current?.scrollIntoView({ behavior: "smooth" });
       }, 100);
@@ -60,11 +63,9 @@ export default function Home() {
 
   const speakStory = () => {
     if (!story) return;
-    if (audioRef.current) audioRef.current.pause();
+    if (audioRef.current) speechSynthesis.cancel();
 
-    const utterance = new SpeechSynthesisUtterance(
-      story.paragraphs.join(". ")
-    );
+    const utterance = new SpeechSynthesisUtterance(story.paragraphs.join(". "));
     utterance.lang =
       language === "English"
         ? "en-US"
@@ -75,17 +76,11 @@ export default function Home() {
     audioRef.current = utterance;
   };
 
-  const pauseStory = () => {
-    speechSynthesis.pause();
-  };
+  const pauseStory = () => speechSynthesis.pause();
+  const resumeStory = () => speechSynthesis.resume();
+  const stopStory = () => speechSynthesis.cancel();
 
-  const resumeStory = () => {
-    speechSynthesis.resume();
-  };
-
-  const stopStory = () => {
-    speechSynthesis.cancel();
-  };
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
   return (
     <div style={{ fontFamily: "Helvetica Neue", padding: "20px", maxWidth: "900px", margin: "0 auto" }}>
@@ -94,7 +89,7 @@ export default function Home() {
       <p>Generate fun and meaningful stories for kids!</p>
 
       <div style={{ backgroundColor: "white", padding: "20px", borderRadius: "10px" }}>
-        <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}>
           <div style={{ flex: "1 1 45%" }}>
             <label>Category</label>
             <select value={category} onChange={(e) => setCategory(e.target.value)}>
@@ -112,7 +107,6 @@ export default function Home() {
               <option>&gt;15 min</option>
             </select>
           </div>
-
           <div style={{ flex: "1 1 45%" }}>
             <label>Language</label>
             <select value={language} onChange={(e) => setLanguage(e.target.value)}>
@@ -147,31 +141,75 @@ export default function Home() {
       </div>
 
       {loading && (
-        <div style={{
-          position: "fixed",
-          top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: "rgba(0,0,0,0.6)",
-          color: "white", display: "flex", justifyContent: "center", alignItems: "center",
-          fontSize: "24px", textAlign: "center", zIndex: 9999
-        }}>
+        <div
+          style={{
+            position: "fixed",
+            top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.6)",
+            color: "white",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            fontSize: "24px",
+            textAlign: "center",
+            zIndex: 9999
+          }}
+        >
           {loaderText}
         </div>
       )}
 
       {story && (
-        <div style={{ backgroundColor: "white", padding: "20px", borderRadius: "10px", marginTop: "20px" }} ref={storyTitleRef}>
+        <div
+          style={{
+            backgroundColor: "white",
+            padding: "20px",
+            borderRadius: "10px",
+            marginTop: "20px",
+          }}
+          ref={storyTitleRef}
+        >
           <h2 style={{ fontWeight: "bold", textAlign: "center" }}>{story.title}</h2>
-          <button onClick={speakStory} style={{ backgroundColor: "#ffdace", color: "#ff7043", fontSize: "14px", margin: "10px auto", display: "block", padding: "5px 10px", borderRadius: "8px" }}>
-            🔊 Play with audio
-          </button>
-          <button onClick={pauseStory} style={{ margin: "0 5px" }}>⏸ Pause</button>
-          <button onClick={resumeStory} style={{ margin: "0 5px" }}>▶ Resume</button>
-          <button onClick={stopStory} style={{ margin: "0 5px" }}>⏹ Stop</button>
+          <div style={{ textAlign: "center", marginBottom: "10px" }}>
+            <button
+              onClick={speakStory}
+              style={{
+                backgroundColor: "#ffdace",
+                color: "#ff7043",
+                fontSize: "14px",
+                padding: "5px 10px",
+                borderRadius: "8px",
+                marginRight: "5px",
+              }}
+            >
+              🔊 Play with audio
+            </button>
+            <button onClick={pauseStory} style={{ marginRight: "5px" }}>⏸ Pause</button>
+            <button onClick={resumeStory} style={{ marginRight: "5px" }}>▶ Resume</button>
+            <button onClick={stopStory}>⏹ Stop</button>
+          </div>
           {story.paragraphs.map((p, idx) => (
-            <p key={idx} style={{ marginBottom: "15px", textAlign: "center" }}>{p}</p>
+            <p key={idx} style={{ marginBottom: "15px", lineHeight: "1.6" }}>{p}</p>
           ))}
         </div>
       )}
+
+      <button
+        onClick={scrollToTop}
+        style={{
+          position: "fixed",
+          bottom: "20px",
+          right: "20px",
+          width: "80px",
+          padding: "5px 10px",
+          borderRadius: "8px",
+          backgroundColor: "#ffdace",
+          color: "#ff7043",
+          cursor: "pointer",
+        }}
+      >
+        ⬆ Top
+      </button>
 
       <footer style={{ textAlign: "center", marginTop: "60px" }}>
         Copyright &copy; 2025 by Laniakea Digital
