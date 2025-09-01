@@ -7,36 +7,35 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).end();
-
-  const { category, length, language, moral } = req.body;
-
-  const prompt = `
-Create a ${length} story for kids about ${category}.
-Language: ${language}
-Moral: ${moral}
-
-Return in JSON format:
-{
-  "title": "<title of the story>",
-  "paragraphs": ["paragraph 1", "paragraph 2", "..."]
-}
-  `;
-
   try {
-    const response = await openai.createChatCompletion({
-      model: "gpt-3.5-turbo",
+    const { category, length, language, moral } = req.body;
+
+    const prompt = `
+Write a ${length} story in ${language} about ${category}, teaching the moral of ${moral}.
+Return JSON with this format only: 
+{
+  "title": "story title",
+  "content": ["paragraph1", "paragraph2", "paragraph3"]
+}
+Do not add any explanation or extra text. Make sure the JSON is valid.
+`;
+
+    const completion = await openai.createChatCompletion({
+      model: "gpt-4",
       messages: [{ role: "user", content: prompt }],
-      temperature: 0.8,
     });
 
-    const text = response.data.choices[0].message.content;
+    const storyText = completion.data.choices[0].message.content;
 
-    // Ensure valid JSON
-    const json = JSON.parse(text);
-    res.status(200).json(json);
+    // Safe JSON parsing using regex to extract JSON object
+    const match = storyText.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error("Invalid JSON from AI");
+
+    const story = JSON.parse(match[0]);
+
+    res.status(200).json(story);
   } catch (err) {
-    console.error("Error generating story:", err);
-    res.status(500).json({ error: "Failed to generate story" });
+    console.error("Story generation error:", err);
+    res.status(500).json({ error: "Failed to generate story. Please try again." });
   }
 }
