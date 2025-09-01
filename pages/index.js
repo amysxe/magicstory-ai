@@ -1,5 +1,8 @@
 import { useState } from "react";
-import Story from "../components/Story";
+import dynamic from "next/dynamic";
+
+// Load Story dynamically to prevent server-side errors
+const Story = dynamic(() => import("../components/Story"), { ssr: false });
 
 export default function Home() {
   const [category, setCategory] = useState("Animal");
@@ -42,13 +45,7 @@ export default function Home() {
       }}>
         <div style={{ flex: "1 1 45%" }}>
           <label>Category</label>
-          <select value={category} onChange={(e) => setCategory(e.target.value)} style={{
-            width: "100%",
-            padding: "10px",
-            borderRadius: "6px",
-            border: "1px solid #ccc",
-            marginTop: "5px"
-          }}>
+          <select value={category} onChange={(e) => setCategory(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", marginTop: "5px" }}>
             <option>Animal</option>
             <option>Fruit</option>
             <option>Person</option>
@@ -59,13 +56,7 @@ export default function Home() {
 
         <div style={{ flex: "1 1 45%" }}>
           <label>Length</label>
-          <select value={length} onChange={(e) => setLength(e.target.value)} style={{
-            width: "100%",
-            padding: "10px",
-            borderRadius: "6px",
-            border: "1px solid #ccc",
-            marginTop: "5px"
-          }}>
+          <select value={length} onChange={(e) => setLength(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", marginTop: "5px" }}>
             <option>5-10 min</option>
             <option>10-15 min</option>
             <option>&gt;15 min</option>
@@ -74,13 +65,7 @@ export default function Home() {
 
         <div style={{ flex: "1 1 45%" }}>
           <label>Language</label>
-          <select value={language} onChange={(e) => setLanguage(e.target.value)} style={{
-            width: "100%",
-            padding: "10px",
-            borderRadius: "6px",
-            border: "1px solid #ccc",
-            marginTop: "5px"
-          }}>
+          <select value={language} onChange={(e) => setLanguage(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", marginTop: "5px" }}>
             <option>English</option>
             <option>Bahasa</option>
             <option>German</option>
@@ -89,13 +74,7 @@ export default function Home() {
 
         <div style={{ flex: "1 1 45%" }}>
           <label>Moral</label>
-          <select value={moral} onChange={(e) => setMoral(e.target.value)} style={{
-            width: "100%",
-            padding: "10px",
-            borderRadius: "6px",
-            border: "1px solid #ccc",
-            marginTop: "5px"
-          }}>
+          <select value={moral} onChange={(e) => setMoral(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", marginTop: "5px" }}>
             <option>Kindness</option>
             <option>Honesty</option>
             <option>Bravery</option>
@@ -107,18 +86,7 @@ export default function Home() {
 
       <button
         onClick={generateStory}
-        style={{
-          background: "#ff7043",
-          color: "#fff",
-          padding: "14px 0",
-          border: "none",
-          borderRadius: "12px",
-          marginTop: "25px",
-          cursor: "pointer",
-          width: "100%",
-          fontWeight: "bold",
-          fontSize: "16px"
-        }}
+        style={{ background: "#ff7043", color: "#fff", padding: "14px 0", border: "none", borderRadius: "12px", marginTop: "25px", cursor: "pointer", width: "100%", fontWeight: "bold", fontSize: "16px" }}
       >
         {loading ? "Generating..." : "Generate Story"}
       </button>
