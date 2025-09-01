@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Head from "next/head";
 import Story from "../components/Story";
 
 export default function Home() {
@@ -46,6 +47,10 @@ export default function Home() {
 
   return (
     <div className="page-container">
+      <Head>
+        <title>Magic Story With AI</title>
+      </Head>
+
       <div className="container">
         <h1>Magic Story with AI</h1>
         <p>Generate fun and meaningful stories for kids!</p>
@@ -111,6 +116,7 @@ export default function Home() {
         }
         .container {
           max-width: 900px;
+          width: 95%;
           margin: auto;
           padding: 20px;
           font-family: "Helvetica Neue", sans-serif;
@@ -132,6 +138,8 @@ export default function Home() {
           font-size: 16px;
           border-radius: 8px;
           border: 1px solid #ccc;
+          width: 100%;
+          box-sizing: border-box;
         }
         button {
           background: #ff7043;
