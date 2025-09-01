@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import Head from "next/head";
 
 export default function Home() {
   const [category, setCategory] = useState("Fruit");
@@ -12,14 +13,12 @@ export default function Home() {
 
   const generateStory = async () => {
     setLoading(true);
-
     try {
       const res = await fetch("/api/story", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ category, length, language, moral }),
       });
-
       const data = await res.json();
       if (res.ok) {
         setStoryData(data);
@@ -50,6 +49,10 @@ export default function Home() {
 
   return (
     <div className="container">
+      <Head>
+        <title>Magic Story With AI</title>
+      </Head>
+
       <h1 className="title">Magic Story with AI</h1>
       <p className="subtitle">Generate fun and meaningful stories for kids!</p>
 
@@ -69,7 +72,6 @@ export default function Home() {
               <option>Random</option>
             </select>
           </div>
-
           <div className="field">
             <label>Story Length</label>
             <select
@@ -97,7 +99,6 @@ export default function Home() {
               <option>German</option>
             </select>
           </div>
-
           <div className="field">
             <label>Moral Lesson</label>
             <select
@@ -114,11 +115,7 @@ export default function Home() {
           </div>
         </div>
 
-        <button
-          onClick={generateStory}
-          disabled={loading}
-          className="button"
-        >
+        <button onClick={generateStory} disabled={loading} className="button">
           {loading ? "Generating..." : "✨ Generate Story"}
         </button>
       </div>
@@ -132,18 +129,16 @@ export default function Home() {
             ))}
           </div>
 
-          {storyData.images?.length > 0 && (
-            <div className="story-images">
-              {storyData.images.map((url, idx) => (
-                <img
-                  key={idx}
-                  src={url}
-                  alt={`Story illustration ${idx + 1}`}
-                  className="story-image"
-                />
-              ))}
-            </div>
-          )}
+          <div className="story-images">
+            {storyData.images.map((url, idx) => (
+              <img
+                key={idx}
+                src={url}
+                alt={`Story illustration ${idx + 1}`}
+                className="story-image"
+              />
+            ))}
+          </div>
 
           <button onClick={generateStory} className="button">
             Find More Story
