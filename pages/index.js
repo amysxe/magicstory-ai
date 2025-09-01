@@ -1,8 +1,8 @@
 import { useState } from "react";
-import Story from "../components/story";
+import Story from "../components/Story";
 
 export default function Home() {
-  const [category, setCategory] = useState("Fruit");
+  const [category, setCategory] = useState("Animal");
   const [length, setLength] = useState("5-10 min");
   const [language, setLanguage] = useState("English");
   const [moral, setMoral] = useState("Friendship");
@@ -76,7 +76,7 @@ export default function Home() {
 
       {storyData && (
         <Story
-          key={storyData.title} // force remount to reset audio
+          key={storyData.title}
           data={storyData}
           language={language}
           onGenerateMore={generateStory}
